@@ -43,7 +43,7 @@ window.addEventListener('error', error => {
   })
 })
 
-function Updaters() {
+const Updaters = () => {
   return (
     <>
       <ListsUpdater />

@@ -16,7 +16,7 @@ import { usePairAdder } from '../../state/user/hooks'
 import { useTokenBalance } from '../../state/wallet/hooks'
 import { StyledInternalLink } from '../../theme'
 import { currencyId } from '../../utils/currencyId'
-import AppBody from '../AppBody'
+import CardBody from '../CardBody'
 import { Dots } from '../Pool/styleds'
 import { BlueCard } from '../../components/Card'
 import { TYPE } from '../../theme'
@@ -79,7 +79,7 @@ export default function PoolFinder() {
   )
 
   return (
-    <AppBody>
+    <CardBody>
       <FindPoolTabs />
       <AutoColumn style={{ padding: '1rem' }} gap="md">
         <BlueCard>
@@ -199,6 +199,6 @@ export default function PoolFinder() {
         showCommonBases
         selectedCurrency={(activeField === Fields.TOKEN0 ? currency1 : currency0) ?? undefined}
       />
-    </AppBody>
+    </CardBody>
   )
 }

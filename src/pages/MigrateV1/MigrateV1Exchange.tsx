@@ -26,7 +26,7 @@ import { useIsTransactionPending, useTransactionAdder } from '../../state/transa
 import { useETHBalances, useTokenBalance } from '../../state/wallet/hooks'
 import { BackArrow, ExternalLink, TYPE } from '../../theme'
 import { getEtherscanLink, isAddress } from '../../utils'
-import { BodyWrapper } from '../AppBody'
+import { CardBodyWrapper } from '../CardBody'
 import { EmptyState } from './EmptyState'
 
 const WEI_DENOM = JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(18))
@@ -340,7 +340,7 @@ export default function MigrateV1Exchange({
   }
 
   return (
-    <BodyWrapper style={{ padding: 24 }}>
+    <CardBodyWrapper style={{ padding: 24 }}>
       <AutoColumn gap="16px">
         <AutoRow style={{ alignItems: 'center', justifyContent: 'space-between' }} gap="8px">
           <BackArrow to="/migrate/v1" />
@@ -373,6 +373,6 @@ export default function MigrateV1Exchange({
           <EmptyState message="Loading..." />
         )}
       </AutoColumn>
-    </BodyWrapper>
+    </CardBodyWrapper>
   )
 }

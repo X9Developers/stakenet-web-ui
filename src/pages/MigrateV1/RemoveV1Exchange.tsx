@@ -17,7 +17,7 @@ import { useIsTransactionPending, useTransactionAdder } from '../../state/transa
 import { useTokenBalance, useETHBalances } from '../../state/wallet/hooks'
 import { BackArrow, TYPE } from '../../theme'
 import { isAddress } from '../../utils'
-import { BodyWrapper } from '../AppBody'
+import { CardBodyWrapper } from '../CardBody'
 import { EmptyState } from './EmptyState'
 import { V1LiquidityInfo } from './MigrateV1Exchange'
 import { AddressZero } from '@ethersproject/constants'
@@ -154,7 +154,7 @@ export default function RemoveV1Exchange({
   }
 
   return (
-    <BodyWrapper style={{ padding: 24 }} id="remove-v1-exchange">
+    <CardBodyWrapper style={{ padding: 24 }} id="remove-v1-exchange">
       <AutoColumn gap="16px">
         <AutoRow style={{ alignItems: 'center', justifyContent: 'space-between' }} gap="8px">
           <BackArrow to="/migrate/v1" />
@@ -176,6 +176,6 @@ export default function RemoveV1Exchange({
           <EmptyState message="Loading..." />
         )}
       </AutoColumn>
-    </BodyWrapper>
+    </CardBodyWrapper>
   )
 }

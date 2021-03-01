@@ -10,7 +10,7 @@ import { useAllTokens, useToken } from '../../hooks/Tokens'
 import { useTokenBalancesWithLoadingIndicator } from '../../state/wallet/hooks'
 import { BackArrow, TYPE } from '../../theme'
 import { LightCard } from '../../components/Card'
-import { BodyWrapper } from '../AppBody'
+import { CardBodyWrapper } from '../CardBody'
 import { EmptyState } from './EmptyState'
 import V1PositionCard from '../../components/PositionCard/V1'
 import QuestionHelper from '../../components/QuestionHelper'
@@ -67,7 +67,7 @@ export default function MigrateV1() {
   const isLoading = Object.keys(V1Exchanges)?.length === 0 || V1LiquidityBalancesLoading
 
   return (
-    <BodyWrapper style={{ padding: 24 }}>
+    <CardBodyWrapper style={{ padding: 24 }}>
       <AutoColumn gap="16px">
         <AutoRow style={{ alignItems: 'center', justifyContent: 'space-between' }} gap="8px">
           <BackArrow to="/pool" />
@@ -111,6 +111,6 @@ export default function MigrateV1() {
           </>
         )}
       </AutoColumn>
-    </BodyWrapper>
+    </CardBodyWrapper>
   )
 }

@@ -11,7 +11,7 @@ import ProgressCircles from '../ProgressSteps'
 import CurrencyInputPanel from '../CurrencyInputPanel'
 import { TokenAmount, Pair } from '@uniswap/sdk'
 import { useActiveWeb3React } from '../../hooks'
-import { maxAmountSpend } from '../../utils/maxAmountSpend'
+import { maxAmountSpend, percAmountSpend } from '../../utils/maxAmountSpend'
 import { usePairContract, useStakingContract } from '../../hooks/useContract'
 import { useApproveCallback, ApprovalState } from '../../hooks/useApproveCallback'
 import { splitSignature } from 'ethers/lib/utils'
@@ -120,9 +120,9 @@ export default function StakingModal({ isOpen, onDismiss, stakingInfo, userLiqui
 
   // used for max input button
   const maxAmountInput = maxAmountSpend(userLiquidityUnstaked)
-  const atMaxAmount = Boolean(maxAmountInput && parsedAmount?.equalTo(maxAmountInput))
-  const handleMax = useCallback(() => {
-    maxAmountInput && onUserInput(maxAmountInput.toExact())
+  const handleSetPerc = useCallback((perc: number) => {
+    const percAmount = percAmountSpend(perc, maxAmountInput)
+    percAmount && onUserInput(percAmount.toExact())
   }, [maxAmountInput, onUserInput])
 
   async function onAttemptToApprove() {
@@ -203,8 +203,8 @@ export default function StakingModal({ isOpen, onDismiss, stakingInfo, userLiqui
           <CurrencyInputPanel
             value={typedValue}
             onUserInput={onUserInput}
-            onMax={handleMax}
-            showMaxButton={!atMaxAmount}
+            onSetPerc={handleSetPerc}
+            showPercButtons={true}
             currency={stakingInfo.stakedAmount.token}
             pair={dummyPair}
             label={''}

@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { darken, lighten } from 'polished'
+import { lighten } from 'polished'
 
 import { RowBetween } from '../Row'
 import { ChevronDown } from 'react-feather'
@@ -42,15 +42,15 @@ export const ButtonPrimary = styled(Base)`
   background-color: ${({ theme }) => theme.primary1};
   color: white;
   &:focus {
-    box-shadow: 0 0 0 1pt ${({ theme }) => darken(0.05, theme.primary1)};
-    background-color: ${({ theme }) => darken(0.05, theme.primary1)};
+    box-shadow: 0 0 0 1pt ${({ theme }) => lighten(0.05, theme.primary1)};
+    background-color: ${({ theme }) => lighten(0.05, theme.primary1)};
   }
   &:hover {
-    background-color: ${({ theme }) => darken(0.05, theme.primary1)};
+    background-color: ${({ theme }) => lighten(0.05, theme.primary1)};
   }
   &:active {
-    box-shadow: 0 0 0 1pt ${({ theme }) => darken(0.1, theme.primary1)};
-    background-color: ${({ theme }) => darken(0.1, theme.primary1)};
+    box-shadow: 0 0 0 1pt ${({ theme }) => lighten(0.1, theme.primary1)};
+    background-color: ${({ theme }) => lighten(0.1, theme.primary1)};
   }
   &:disabled {
     background-color: ${({ theme, altDisabledStyle, disabled }) =>
@@ -71,15 +71,15 @@ export const ButtonLight = styled(Base)`
   font-size: 16px;
   font-weight: 500;
   &:focus {
-    box-shadow: 0 0 0 1pt ${({ theme, disabled }) => !disabled && darken(0.03, theme.primary5)};
-    background-color: ${({ theme, disabled }) => !disabled && darken(0.03, theme.primary5)};
+    box-shadow: 0 0 0 1pt ${({ theme, disabled }) => !disabled && lighten(0.03, theme.primary5)};
+    background-color: ${({ theme, disabled }) => !disabled && lighten(0.03, theme.primary5)};
   }
   &:hover {
-    background-color: ${({ theme, disabled }) => !disabled && darken(0.03, theme.primary5)};
+    background-color: ${({ theme, disabled }) => !disabled && lighten(0.03, theme.primary5)};
   }
   &:active {
-    box-shadow: 0 0 0 1pt ${({ theme, disabled }) => !disabled && darken(0.05, theme.primary5)};
-    background-color: ${({ theme, disabled }) => !disabled && darken(0.05, theme.primary5)};
+    box-shadow: 0 0 0 1pt ${({ theme, disabled }) => !disabled && lighten(0.05, theme.primary5)};
+    background-color: ${({ theme, disabled }) => !disabled && lighten(0.05, theme.primary5)};
   }
   :disabled {
     opacity: 0.4;
@@ -99,13 +99,13 @@ export const ButtonGray = styled(Base)`
   font-size: 16px;
   font-weight: 500;
   &:focus {
-    background-color: ${({ theme, disabled }) => !disabled && darken(0.05, theme.bg4)};
+    background-color: ${({ theme, disabled }) => !disabled && lighten(0.05, theme.bg4)};
   }
   &:hover {
-    background-color: ${({ theme, disabled }) => !disabled && darken(0.05, theme.bg4)};
+    background-color: ${({ theme, disabled }) => !disabled && lighten(0.05, theme.bg4)};
   }
   &:active {
-    background-color: ${({ theme, disabled }) => !disabled && darken(0.1, theme.bg4)};
+    background-color: ${({ theme, disabled }) => !disabled && lighten(0.1, theme.bg4)};
   }
 `
 
@@ -142,15 +142,15 @@ export const ButtonPink = styled(Base)`
   color: white;
 
   &:focus {
-    box-shadow: 0 0 0 1pt ${({ theme }) => darken(0.05, theme.primary1)};
-    background-color: ${({ theme }) => darken(0.05, theme.primary1)};
+    box-shadow: 0 0 0 1pt ${({ theme }) => lighten(0.05, theme.primary1)};
+    background-color: ${({ theme }) => lighten(0.05, theme.primary1)};
   }
   &:hover {
-    background-color: ${({ theme }) => darken(0.05, theme.primary1)};
+    background-color: ${({ theme }) => lighten(0.05, theme.primary1)};
   }
   &:active {
-    box-shadow: 0 0 0 1pt ${({ theme }) => darken(0.1, theme.primary1)};
-    background-color: ${({ theme }) => darken(0.1, theme.primary1)};
+    box-shadow: 0 0 0 1pt ${({ theme }) => lighten(0.1, theme.primary1)};
+    background-color: ${({ theme }) => lighten(0.1, theme.primary1)};
   }
   &:disabled {
     background-color: ${({ theme }) => theme.primary1};
@@ -228,13 +228,13 @@ export const ButtonWhite = styled(Base)`
 
   &:focus {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    box-shadow: 0 0 0 1pt ${darken(0.05, '#edeef2')};
+    box-shadow: 0 0 0 1pt ${lighten(0.05, '#edeef2')};
   }
   &:hover {
-    box-shadow: 0 0 0 1pt ${darken(0.1, '#edeef2')};
+    box-shadow: 0 0 0 1pt ${lighten(0.1, '#edeef2')};
   }
   &:active {
-    box-shadow: 0 0 0 1pt ${darken(0.1, '#edeef2')};
+    box-shadow: 0 0 0 1pt ${lighten(0.1, '#edeef2')};
   }
   &:disabled {
     opacity: 50%;
@@ -258,15 +258,15 @@ const ButtonErrorStyle = styled(Base)`
   border: 1px solid ${({ theme }) => theme.red1};
 
   &:focus {
-    box-shadow: 0 0 0 1pt ${({ theme }) => darken(0.05, theme.red1)};
-    background-color: ${({ theme }) => darken(0.05, theme.red1)};
+    box-shadow: 0 0 0 1pt ${({ theme }) => lighten(0.05, theme.red1)};
+    background-color: ${({ theme }) => lighten(0.05, theme.red1)};
   }
   &:hover {
-    background-color: ${({ theme }) => darken(0.05, theme.red1)};
+    background-color: ${({ theme }) => lighten(0.05, theme.red1)};
   }
   &:active {
-    box-shadow: 0 0 0 1pt ${({ theme }) => darken(0.1, theme.red1)};
-    background-color: ${({ theme }) => darken(0.1, theme.red1)};
+    box-shadow: 0 0 0 1pt ${({ theme }) => lighten(0.1, theme.red1)};
+    background-color: ${({ theme }) => lighten(0.1, theme.red1)};
   }
   &:disabled {
     opacity: 50%;

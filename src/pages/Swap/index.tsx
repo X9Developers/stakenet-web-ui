@@ -1,5 +1,6 @@
-import { CurrencyAmount, JSBI, Token, Trade } from '@uniswap/sdk'
+import { JSBI, Token, Trade } from '@uniswap/sdk'
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import debounce from 'lodash.debounce'
 import { ArrowDown } from 'react-feather'
 import ReactGA from 'react-ga'
 import { Text } from 'rebass'
@@ -40,7 +41,7 @@ import {
 } from '../../state/swap/hooks'
 import { useExpertModeManager, useUserSlippageTolerance, useUserSingleHopOnly } from '../../state/user/hooks'
 import { LinkStyledButton, TYPE } from '../../theme'
-import { maxAmountSpend } from '../../utils/maxAmountSpend'
+import { percAmountSpend } from '../../utils/maxAmountSpend'
 import { computeTradePriceBreakdown, warningSeverity } from '../../utils/prices'
 import CardBody from '../CardBody'
 import { ClickableText } from '../Pool/styleds'
@@ -48,7 +49,8 @@ import Loader from '../../components/Loader'
 import { useIsTransactionUnsupported } from 'hooks/Trades'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 import { isTradeBetter } from 'utils/trades'
-import { CurrencyInputWrapper } from 'components/CurrencyInputWrapper'
+import { SwapTopSection } from 'components/SwapWrappers'
+import { AdvancedSwapDetails } from 'components/swap/AdvancedSwapDetails'
 
 export default function Swap() {
   const loadedUrlParams = useDefaultsFromURLSearch()
@@ -184,9 +186,6 @@ export default function Swap() {
     }
   }, [approval, approvalSubmitted])
 
-  const maxAmountInput: CurrencyAmount | undefined = maxAmountSpend(currencyBalances[Field.INPUT])
-  const atMaxAmountInput = Boolean(maxAmountInput && parsedAmounts[Field.INPUT]?.equalTo(maxAmountInput))
-
   // the callback to execute the swap
   const { callback: swapCallback, error: swapCallbackError } = useSwapCallback(trade, allowedSlippage, recipient)
 
@@ -282,9 +281,14 @@ export default function Swap() {
     [onCurrencySelection]
   )
 
-  const handleMaxInput = useCallback(() => {
-    maxAmountInput && onUserInput(Field.INPUT, maxAmountInput.toExact())
-  }, [maxAmountInput, onUserInput])
+  // const handleSetPerc = (perc: number) => {
+  //   const percAmount = percAmountSpend(perc, currencyBalances[Field.INPUT])
+  //   percAmount && onUserInput(Field.INPUT, percAmount.toExact())
+  // }
+  const handleSetPerc = debounce((perc: number) => {
+    const percAmount = percAmountSpend(perc, currencyBalances[Field.INPUT])
+    percAmount && onUserInput(Field.INPUT, percAmount.toExact())
+  }, 150)
 
   const handleOutputSelect = useCallback(outputCurrency => onCurrencySelection(Field.OUTPUT, outputCurrency), [
     onCurrencySelection
@@ -318,14 +322,14 @@ export default function Swap() {
           />
 
           <AutoColumn gap={'md'}>
-            <CurrencyInputWrapper>
+            <SwapTopSection>
               <CurrencyInputPanel
                 label={independentField === Field.OUTPUT && !showWrap && trade ? 'From (estimated)' : 'From'}
                 value={formattedAmounts[Field.INPUT]}
-                showMaxButton={!atMaxAmountInput}
+                showPercButtons={true}
                 currency={currencies[Field.INPUT]}
                 onUserInput={handleTypeInput}
-                onMax={handleMaxInput}
+                onSetPerc={handleSetPerc}
                 onCurrencySelect={handleInputSelect}
                 otherCurrency={currencies[Field.OUTPUT]}
                 id="swap-currency-input"
@@ -353,13 +357,13 @@ export default function Swap() {
                 value={formattedAmounts[Field.OUTPUT]}
                 onUserInput={handleTypeOutput}
                 label={independentField === Field.INPUT && !showWrap && trade ? 'To (estimated)' : 'To'}
-                showMaxButton={false}
+                showPercButtons={false}
                 currency={currencies[Field.OUTPUT]}
                 onCurrencySelect={handleOutputSelect}
                 otherCurrency={currencies[Field.INPUT]}
                 id="swap-currency-output"
               />
-            </CurrencyInputWrapper>
+            </SwapTopSection>
 
             {recipient !== null && !showWrap ? (
               <>
@@ -404,7 +408,9 @@ export default function Swap() {
               </Card>
             )}
           </AutoColumn>
+
           <BottomGrouping>
+            <AdvancedSwapDetails trade={trade} />
             {swapIsUnsupported ? (
               <ButtonPrimary disabled={true}>
                 <TYPE.main mb="4px">Unsupported Asset</TYPE.main>
@@ -510,10 +516,10 @@ export default function Swap() {
           </BottomGrouping>
         </Wrapper>
       </CardBody>
-      {!swapIsUnsupported ? (
-        <AdvancedSwapDetailsDropdown trade={trade} />
-      ) : (
+      {swapIsUnsupported ? (
         <UnsupportedCurrencyFooter show={swapIsUnsupported} currencies={[currencies.INPUT, currencies.OUTPUT]} />
+        ) : (
+        <AdvancedSwapDetailsDropdown trade={trade} />
       )}
     </>
   )

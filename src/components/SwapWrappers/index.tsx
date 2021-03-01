@@ -1,13 +1,14 @@
 import styled from 'styled-components'
 
-export const CurrencyInputWrapper = styled.div`
+export const SwapTopSection = styled.div`
 display: flex;
 flex: 1;
 flex-direction: row;
 width: 100%;
 padding: 32px;
-padding-top: 120px;
-padding-bottom: 120px;
+padding-top: 80px;
+padding-bottom: 80px;
+min-height: 400px;
 justify-content: space-around;
 align-items: center;
 

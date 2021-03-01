@@ -31,7 +31,7 @@ import { useTransactionAdder } from '../../state/transactions/hooks'
 import { useIsExpertMode, useUserSlippageTolerance } from '../../state/user/hooks'
 import { TYPE } from '../../theme'
 import { calculateGasMargin, calculateSlippageAmount, getRouterContract } from '../../utils'
-import { maxAmountSpend } from '../../utils/maxAmountSpend'
+import { maxAmountSpend, percAmountSpend } from '../../utils/maxAmountSpend'
 import { wrappedCurrency } from '../../utils/wrappedCurrency'
 import CardBody from '../CardBody'
 import { Dots, Wrapper } from '../Pool/styleds'
@@ -104,16 +104,6 @@ export default function AddLiquidity({
       return {
         ...accumulator,
         [field]: maxAmountSpend(currencyBalances[field])
-      }
-    },
-    {}
-  )
-
-  const atMaxAmounts: { [field in Field]?: TokenAmount } = [Field.CURRENCY_A, Field.CURRENCY_B].reduce(
-    (accumulator, field) => {
-      return {
-        ...accumulator,
-        [field]: maxAmounts[field]?.equalTo(parsedAmounts[field] ?? '0')
       }
     },
     {}
@@ -364,11 +354,11 @@ export default function AddLiquidity({
             <CurrencyInputPanel
               value={formattedAmounts[Field.CURRENCY_A]}
               onUserInput={onFieldAInput}
-              onMax={() => {
-                onFieldAInput(maxAmounts[Field.CURRENCY_A]?.toExact() ?? '')
+              onSetPerc={(perc: number) => {
+                onFieldAInput(percAmountSpend(perc, maxAmounts[Field.CURRENCY_A])?.toExact() ?? '')
               }}
               onCurrencySelect={handleCurrencyASelect}
-              showMaxButton={!atMaxAmounts[Field.CURRENCY_A]}
+              showPercButtons={true}
               currency={currencies[Field.CURRENCY_A]}
               id="add-liquidity-input-tokena"
               showCommonBases
@@ -380,10 +370,10 @@ export default function AddLiquidity({
               value={formattedAmounts[Field.CURRENCY_B]}
               onUserInput={onFieldBInput}
               onCurrencySelect={handleCurrencyBSelect}
-              onMax={() => {
-                onFieldBInput(maxAmounts[Field.CURRENCY_B]?.toExact() ?? '')
+              onSetPerc={(perc: number) => {
+                onFieldBInput(percAmountSpend(perc, maxAmounts[Field.CURRENCY_B])?.toExact() ?? '')
               }}
-              showMaxButton={!atMaxAmounts[Field.CURRENCY_B]}
+              showPercButtons={true}
               currency={currencies[Field.CURRENCY_B]}
               id="add-liquidity-input-tokenb"
               showCommonBases

@@ -93,8 +93,6 @@ export default function RemoveLiquidity({
       independentField === Field.CURRENCY_B ? typedValue : parsedAmounts[Field.CURRENCY_B]?.toSignificant(6) ?? ''
   }
 
-  const atMaxAmount = parsedAmounts[Field.LIQUIDITY_PERCENT]?.equalTo(new Percent('1'))
-
   // pair contract
   const pairContract: Contract | null = usePairContract(pair?.liquidityToken?.address)
 
@@ -599,10 +597,8 @@ export default function RemoveLiquidity({
                 <CurrencyInputPanel
                   value={formattedAmounts[Field.LIQUIDITY]}
                   onUserInput={onLiquidityInput}
-                  onMax={() => {
-                    onUserInput(Field.LIQUIDITY_PERCENT, '100')
-                  }}
-                  showMaxButton={!atMaxAmount}
+                  onSetPerc={(perc: number) => onUserInput(Field.LIQUIDITY_PERCENT, (perc * 100).toString())}
+                  showPercButtons={true}
                   disableCurrencySelect
                   currency={pair?.liquidityToken}
                   pair={pair}
@@ -615,8 +611,8 @@ export default function RemoveLiquidity({
                   hideBalance={true}
                   value={formattedAmounts[Field.CURRENCY_A]}
                   onUserInput={onCurrencyAInput}
-                  onMax={() => onUserInput(Field.LIQUIDITY_PERCENT, '100')}
-                  showMaxButton={!atMaxAmount}
+                  onSetPerc={(perc: number) => onUserInput(Field.LIQUIDITY_PERCENT, (perc * 100).toString())}
+                  showPercButtons={true}
                   currency={currencyA}
                   label={'Output'}
                   onCurrencySelect={handleSelectCurrencyA}
@@ -629,8 +625,8 @@ export default function RemoveLiquidity({
                   hideBalance={true}
                   value={formattedAmounts[Field.CURRENCY_B]}
                   onUserInput={onCurrencyBInput}
-                  onMax={() => onUserInput(Field.LIQUIDITY_PERCENT, '100')}
-                  showMaxButton={!atMaxAmount}
+                  onSetPerc={(perc: number) => onUserInput(Field.LIQUIDITY_PERCENT, (perc * 100).toString())}
+                  showPercButtons={true}
                   currency={currencyB}
                   label={'Output'}
                   onCurrencySelect={handleSelectCurrencyB}

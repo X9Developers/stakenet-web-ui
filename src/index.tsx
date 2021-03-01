@@ -19,6 +19,7 @@ import TransactionUpdater from './state/transactions/updater'
 import UserUpdater from './state/user/updater'
 import ThemeProvider, { FixedGlobalStyle, ThemedGlobalStyle } from './theme'
 import getLibrary from './utils/getLibrary'
+import SVGDefs from 'theme/SVGDefs'
 
 const Web3ProviderNetwork = createWeb3ReactRoot(NetworkContextName)
 
@@ -73,6 +74,7 @@ ReactDOM.render(
         </Blocklist>
       </Web3ProviderNetwork>
     </Web3ReactProvider>
+    <SVGDefs />
   </StrictMode>,
   document.getElementById('root')
 )

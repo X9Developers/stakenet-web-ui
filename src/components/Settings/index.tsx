@@ -1,5 +1,5 @@
+import { CardHeaderCloseIcon, CardHeaderMenuButton, CardHeaderMenuIcon, StyledMenu } from 'components/Card/CardHeaderStyledComponents'
 import React, { useContext, useRef, useState } from 'react'
-import { Settings, X } from 'react-feather'
 import { Text } from 'rebass'
 import styled, { ThemeContext } from 'styled-components'
 import { useOnClickOutside } from '../../hooks/useOnClickOutside'
@@ -20,69 +20,11 @@ import { RowBetween, RowFixed } from '../Row'
 import Toggle from '../Toggle'
 import TransactionSettings from '../TransactionSettings'
 
-const StyledMenuIcon = styled(Settings)`
-  height: 20px;
-  width: 20px;
-
-  > * {
-    stroke: ${({ theme }) => theme.text2};
-  }
-
-  :hover {
-    opacity: 0.7;
-  }
-`
-
-const StyledCloseIcon = styled(X)`
-  height: 20px;
-  width: 20px;
-  :hover {
-    cursor: pointer;
-  }
-
-  > * {
-    stroke: ${({ theme }) => theme.text1};
-  }
-`
-
-const StyledMenuButton = styled.button`
-  position: relative;
-  width: 100%;
-  height: 100%;
-  border: none;
-  background-color: transparent;
-  margin: 0;
-  padding: 0;
-  height: 35px;
-
-  padding: 0.15rem 0.5rem;
-  border-radius: 0.5rem;
-
-  :hover,
-  :focus {
-    cursor: pointer;
-    outline: none;
-  }
-
-  svg {
-    margin-top: 2px;
-  }
-`
 const EmojiWrapper = styled.div`
   position: absolute;
   bottom: -6px;
   right: 0px;
   font-size: 14px;
-`
-
-const StyledMenu = styled.div`
-  margin-left: 0.5rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  border: none;
-  text-align: left;
 `
 
 const MenuFlyout = styled.span`
@@ -149,7 +91,7 @@ export default function SettingsTab() {
               <Text fontWeight={500} fontSize={20}>
                 Are you sure?
               </Text>
-              <StyledCloseIcon onClick={() => setShowConfirmation(false)} />
+              <CardHeaderCloseIcon onClick={() => setShowConfirmation(false)} />
             </RowBetween>
             <Break />
             <AutoColumn gap="lg" style={{ padding: '0 2rem' }}>
@@ -178,8 +120,8 @@ export default function SettingsTab() {
           </AutoColumn>
         </ModalContentWrapper>
       </Modal>
-      <StyledMenuButton onClick={toggle} id="open-settings-dialog-button">
-        <StyledMenuIcon />
+      <CardHeaderMenuButton onClick={toggle} id="open-settings-dialog-button">
+        <CardHeaderMenuIcon />
         {expertMode ? (
           <EmojiWrapper>
             <span role="img" aria-label="wizard-icon">
@@ -187,7 +129,7 @@ export default function SettingsTab() {
             </span>
           </EmojiWrapper>
         ) : null}
-      </StyledMenuButton>
+      </CardHeaderMenuButton>
       {open && (
         <MenuFlyout>
           <AutoColumn gap="md" style={{ padding: '1rem' }}>

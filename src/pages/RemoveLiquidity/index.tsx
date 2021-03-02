@@ -71,6 +71,7 @@ export default function RemoveLiquidity({
 
   // modal and loading
   const [showConfirm, setShowConfirm] = useState<boolean>(false)
+  console.log(showConfirm)
   const [showDetailed, setShowDetailed] = useState<boolean>(false)
   const [attemptingTxn, setAttemptingTxn] = useState(false) // clicked confirm
 
@@ -454,15 +455,15 @@ export default function RemoveLiquidity({
     [currencyIdA, currencyIdB, history]
   )
 
-  const handleDismissConfirmation = useCallback(() => {
-    setShowConfirm(false)
-    setSignatureData(null) // important that we clear signature data to avoid bad sigs
-    // if there was a tx hash, we want to clear the input
-    if (txHash) {
-      onUserInput(Field.LIQUIDITY_PERCENT, '0')
-    }
-    setTxHash('')
-  }, [onUserInput, txHash])
+  // const handleDismissConfirmation = useCallback(() => {
+  //   setShowConfirm(false)
+  //   setSignatureData(null) // important that we clear signature data to avoid bad sigs
+  //   // if there was a tx hash, we want to clear the input
+  //   if (txHash) {
+  //     onUserInput(Field.LIQUIDITY_PERCENT, '0')
+  //   }
+  //   setTxHash('')
+  // }, [onUserInput, txHash])
 
   const [innerLiquidityPercentage, setInnerLiquidityPercentage] = useDebouncedChangeHandler(
     Number.parseInt(parsedAmounts[Field.LIQUIDITY_PERCENT].toFixed(0)),
@@ -475,14 +476,12 @@ export default function RemoveLiquidity({
         <AddRemoveTabs creating={false} adding={false} />
         <Wrapper>
           <TransactionConfirmationModal
-            isOpen={showConfirm}
-            onDismiss={handleDismissConfirmation}
             attemptingTxn={attemptingTxn}
             hash={txHash ? txHash : ''}
             content={() => (
               <ConfirmationModalContent
-                title={'You will receive'}
-                onDismiss={handleDismissConfirmation}
+                // title={'You will receive'}
+                // onDismiss={handleDismissConfirmation}
                 topContent={modalHeader}
                 bottomContent={modalBottom}
               />

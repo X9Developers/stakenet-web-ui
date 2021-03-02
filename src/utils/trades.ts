@@ -25,3 +25,18 @@ export function isTradeBetter(
     return tradeA.executionPrice.raw.multiply(minimumDelta.add(ONE_HUNDRED_PERCENT)).lessThan(tradeB.executionPrice)
   }
 }
+
+/**
+ * Returns true if the trade requires a confirmation of details before we can submit it
+ * @param tradeA trade A
+ * @param tradeB trade B
+ */
+export function tradeMeaningfullyDiffers(tradeA: Trade, tradeB: Trade): boolean {
+  return (
+    tradeA.tradeType !== tradeB.tradeType ||
+    !currencyEquals(tradeA.inputAmount.currency, tradeB.inputAmount.currency) ||
+    !tradeA.inputAmount.equalTo(tradeB.inputAmount) ||
+    !currencyEquals(tradeA.outputAmount.currency, tradeB.outputAmount.currency) ||
+    !tradeA.outputAmount.equalTo(tradeB.outputAmount)
+  )
+}

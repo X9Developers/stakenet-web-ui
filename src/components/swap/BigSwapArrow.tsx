@@ -41,7 +41,7 @@ const ArrowsBlur = styled.div`
     height: 20px;
     border-radius: 30px;
     filter: blur(20px);
-    opacity: 0.;
+    opacity: 0.4;
     background: white;
 `
 

@@ -1,29 +1,25 @@
 import { JSBI, Token, Trade } from '@uniswap/sdk'
-import React, { useCallback, useContext, useMemo, useState } from 'react'
-import debounce from 'lodash.debounce'
+import React, { useCallback, useMemo, useState } from 'react'
 import ReactGA from 'react-ga'
 import { Text } from 'rebass'
-import { ThemeContext } from 'styled-components'
+import styled from 'styled-components'
 import { ButtonError, ButtonLight, ButtonPrimary } from '../../components/Button'
-import Card, { GreyCard } from '../../components/Card'
+import { GreyCard } from '../../components/Card'
 import { AutoColumn } from '../../components/Column'
-import ConfirmSwapModal from '../../components/swap/ConfirmSwapModal'
+import PreviewSwapSection from '../../components/swap/PreviewSwapSection'
 import CurrencyInputPanel from '../../components/CurrencyInputPanel'
 import { SwapPoolTabs } from '../../components/NavigationTabs'
-import { RowBetween } from '../../components/Row'
 import confirmPriceImpactWithoutFee from '../../components/swap/confirmPriceImpactWithoutFee'
-import { SwapCallbackError, Wrapper } from '../../components/swap/styleds'
-import TradePrice from '../../components/swap/TradePrice'
+import { SwapShowAcceptChanges, Wrapper } from '../../components/swap/styleds'
 import TokenWarningModal from '../../components/TokenWarningModal'
 import SwapHeader from '../../components/swap/SwapHeader'
 
-import { INITIAL_ALLOWED_SLIPPAGE } from '../../constants'
 import { getTradeVersion } from '../../data/V1'
 import { useActiveWeb3React } from '../../hooks'
 import { useCurrency, useAllTokens } from '../../hooks/Tokens'
 import useENSAddress from '../../hooks/useENSAddress'
 import { useSwapCallback } from '../../hooks/useSwapCallback'
-import { useToggleSettingsMenu, useWalletModalToggle } from '../../state/application/hooks'
+import { useWalletModalToggle } from '../../state/application/hooks'
 import { Field } from '../../state/swap/actions'
 import {
   useDefaultsFromURLSearch,
@@ -36,12 +32,26 @@ import { TYPE } from '../../theme'
 import { percAmountSpend } from '../../utils/maxAmountSpend'
 import { computeTradePriceBreakdown, warningSeverity } from '../../utils/prices'
 import CardBody from '../CardBody'
-import { ClickableText } from '../Pool/styleds'
 import { useIsTransactionUnsupported } from 'hooks/Trades'
-import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
-import { SwapTopSection, SwapBottomSection, SwapBottomSectionFiller } from 'components/SwapWrappers'
-import { AdvancedSwapDetails } from 'components/swap/AdvancedSwapDetails'
+import { SwapTopSection, SwapBottomSection, SwapBottomSectionFiller, SwapBottomRevealable } from 'components/SwapWrappers'
 import BigSwapArrow from 'components/swap/BigSwapArrow'
+import { tradeMeaningfullyDiffers } from 'utils/trades'
+import { RowFixed } from 'components/Row'
+import { AlertTriangle } from 'react-feather'
+
+const BottomSectionButton = styled.div`
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  z-index: 4;
+`
+
+const StyledAlertTriangle = styled(AlertTriangle)`
+  margin-right: 8px;
+  width: 20px;
+  height: 20px;
+`
 
 export default function Swap() {
   const loadedUrlParams = useDefaultsFromURLSearch()
@@ -69,13 +79,11 @@ export default function Swap() {
     })
 
   const { account } = useActiveWeb3React()
-  const theme = useContext(ThemeContext)
 
   // toggle wallet when disconnected
   const toggleWalletModal = useWalletModalToggle()
 
   // for expert mode
-  const toggleSettings = useToggleSettingsMenu()
   const [isExpertMode] = useExpertModeManager()
 
   // get custom setting values for user
@@ -116,14 +124,14 @@ export default function Swap() {
   )
 
   // modal and loading
-  const [{ showConfirm, tradeToConfirm, swapErrorMessage, attemptingTxn, txHash }, setSwapState] = useState<{
-    showConfirm: boolean
+  const [{ showPreview, tradeToConfirm, swapErrorMessage, attemptingTxn, txHash }, setSwapState] = useState<{
+    showPreview: boolean
     tradeToConfirm: Trade | undefined
     attemptingTxn: boolean
     swapErrorMessage: string | undefined
     txHash: string | undefined
   }>({
-    showConfirm: false,
+    showPreview: false,
     tradeToConfirm: undefined,
     attemptingTxn: false,
     swapErrorMessage: undefined,
@@ -147,10 +155,6 @@ export default function Swap() {
   const { priceImpactWithoutFee } = computeTradePriceBreakdown(trade)
 
   const [singleHopOnly] = useUserSingleHopOnly()
-  const [inPreviewFlow, setInPreviewFlow] = useState(false)
-
-  const handleOpenSwapPreview = () => setInPreviewFlow(true)
-  const handleCancelSwapPreview = () => setInPreviewFlow(false)
 
   const handleSwap = useCallback(() => {
     if (priceImpactWithoutFee && !confirmPriceImpactWithoutFee(priceImpactWithoutFee)) {
@@ -159,10 +163,10 @@ export default function Swap() {
     if (!swapCallback) {
       return
     }
-    setSwapState({ attemptingTxn: true, tradeToConfirm, showConfirm, swapErrorMessage: undefined, txHash: undefined })
+    setSwapState({ attemptingTxn: true, tradeToConfirm, showPreview: showPreview, swapErrorMessage: undefined, txHash: undefined })
     swapCallback()
       .then(hash => {
-        setSwapState({ attemptingTxn: false, tradeToConfirm, showConfirm, swapErrorMessage: undefined, txHash: hash })
+        setSwapState({ attemptingTxn: false, tradeToConfirm, showPreview: showPreview, swapErrorMessage: undefined, txHash: hash })
 
         ReactGA.event({
           category: 'Swap',
@@ -188,7 +192,7 @@ export default function Swap() {
         setSwapState({
           attemptingTxn: false,
           tradeToConfirm,
-          showConfirm,
+          showPreview: showPreview,
           swapErrorMessage: error.message,
           txHash: undefined
         })
@@ -197,7 +201,7 @@ export default function Swap() {
     priceImpactWithoutFee,
     swapCallback,
     tradeToConfirm,
-    showConfirm,
+    showPreview,
     recipient,
     recipientAddress,
     account,
@@ -205,41 +209,39 @@ export default function Swap() {
     singleHopOnly
   ])
 
-  // errors
-  const [showInverted, setShowInverted] = useState<boolean>(false)
-
   // warnings on slippage
   const priceImpactSeverity = warningSeverity(priceImpactWithoutFee)
 
-  const handleConfirmDismiss = useCallback(() => {
-    setSwapState({ showConfirm: false, tradeToConfirm, attemptingTxn, swapErrorMessage, txHash })
+  const handlePreviewDismiss = useCallback(() => {
+    setSwapState({ showPreview: false, tradeToConfirm, attemptingTxn, swapErrorMessage: undefined, txHash })
     // if there was a tx hash, we want to clear the input
     if (txHash) {
       onUserInput(Field.INPUT, '')
     }
-  }, [attemptingTxn, onUserInput, swapErrorMessage, tradeToConfirm, txHash])
+  }, [attemptingTxn, onUserInput, tradeToConfirm, txHash])
 
   const handleAcceptChanges = useCallback(() => {
-    setSwapState({ tradeToConfirm: trade, swapErrorMessage, txHash, attemptingTxn, showConfirm })
-  }, [attemptingTxn, showConfirm, swapErrorMessage, trade, txHash])
+    setSwapState({ tradeToConfirm: trade, swapErrorMessage, txHash, attemptingTxn, showPreview: showPreview })
+  }, [attemptingTxn, showPreview, swapErrorMessage, trade, txHash])
 
   const handleInputSelect = useCallback(
     inputCurrency => onCurrencySelection(Field.INPUT, inputCurrency),
     [onCurrencySelection]
   )
 
-  // const handleSetPerc = (perc: number) => {
-  //   const percAmount = percAmountSpend(perc, currencyBalances[Field.INPUT])
-  //   percAmount && onUserInput(Field.INPUT, percAmount.toExact())
-  // }
-  const handleSetPerc = debounce((perc: number) => {
+  const handleSetPerc = (perc: number) => {
     const percAmount = percAmountSpend(perc, currencyBalances[Field.INPUT])
     percAmount && onUserInput(Field.INPUT, percAmount.toExact())
-  }, 150)
+  }
 
   const handleOutputSelect = useCallback(outputCurrency => onCurrencySelection(Field.OUTPUT, outputCurrency), [
     onCurrencySelection
   ])
+
+  const acceptChangesRequired = useMemo(
+    () => Boolean(showPreview && trade && tradeToConfirm && tradeMeaningfullyDiffers(trade, tradeToConfirm)),
+    [tradeToConfirm, showPreview, trade]
+  )
 
   const swapIsUnsupported = useIsTransactionUnsupported(currencies?.INPUT, currencies?.OUTPUT)
 
@@ -252,24 +254,10 @@ export default function Swap() {
       />
       <SwapPoolTabs active={'swap'} />
       <CardBody>
-        <SwapHeader inPreviewFlow={inPreviewFlow} onCancelPreview={handleCancelSwapPreview}/>
+        <SwapHeader inPreviewFlow={showPreview} onCancelPreview={handlePreviewDismiss}/>
         <Wrapper id="swap-page">
-          <ConfirmSwapModal
-            isOpen={showConfirm}
-            trade={trade}
-            originalTrade={tradeToConfirm}
-            onAcceptChanges={handleAcceptChanges}
-            attemptingTxn={attemptingTxn}
-            txHash={txHash}
-            recipient={recipient}
-            allowedSlippage={allowedSlippage}
-            onConfirm={handleSwap}
-            swapErrorMessage={swapErrorMessage}
-            onDismiss={handleConfirmDismiss}
-          />
-
           <AutoColumn gap={'md'}>
-            <SwapTopSection id='swap-top-section'>
+            <SwapTopSection id='swap-top-section' minHeight={(700 - 60) / 2}>
               <CurrencyInputPanel
                 label={independentField === Field.OUTPUT && trade ? 'From (estimated)' : 'From'}
                 value={formattedAmounts[Field.INPUT]}
@@ -293,61 +281,34 @@ export default function Swap() {
                 onCurrencySelect={handleOutputSelect}
                 otherCurrency={currencies[Field.INPUT]}
                 id="swap-currency-output"
+                trade={trade}
               />
             </SwapTopSection>
-
-
             {/* TODO: Reimplement send address */}
-            {/* {recipient !== null && !showWrap ? (
-              <>
-                <AutoRow justify="space-between" style={{ padding: '0 1rem' }}>
-                  <ArrowWrapper clickable={false}>
-                    <ArrowDown size="16" color={theme.text2} />
-                  </ArrowWrapper>
-                  <LinkStyledButton id="remove-recipient-button" onClick={() => onChangeRecipient(null)}>
-                    - Remove send
-                  </LinkStyledButton>
-                </AutoRow>
-                <AddressInputPanel id="recipient" value={recipient} onChange={onChangeRecipient} />
-              </>
-            ) : null} */}
-
-            <Card padding='0px' borderRadius={'20px'}>
-              <AutoColumn gap="8px" style={{ padding: '0 16px' }}>
-                {Boolean(trade) && (
-                  <RowBetween align="center">
-                    <Text fontWeight={500} fontSize={14} color={theme.text2}>
-                      Price
-                    </Text>
-                    <TradePrice
-                      price={trade?.executionPrice}
-                      showInverted={showInverted}
-                      setShowInverted={setShowInverted}
-                    />
-                  </RowBetween>
-                )}
-                {allowedSlippage !== INITIAL_ALLOWED_SLIPPAGE && (
-                  <RowBetween align="center">
-                    <ClickableText fontWeight={500} fontSize={14} color={theme.text2} onClick={toggleSettings}>
-                      Slippage Tolerance
-                    </ClickableText>
-                    <ClickableText fontWeight={500} fontSize={14} color={theme.text2} onClick={toggleSettings}>
-                      {allowedSlippage / 100}%
-                    </ClickableText>
-                  </RowBetween>
-                )}
-              </AutoColumn>
-            </Card>
           </AutoColumn>
 
           <SwapBottomSectionFiller/>
-          <SwapBottomSection expanded={inPreviewFlow}>
-            <AutoColumn gap="md">
-              {swapIsUnsupported ? (
-              <UnsupportedCurrencyFooter show={swapIsUnsupported} currencies={[currencies.INPUT, currencies.OUTPUT]} />
-              ) : (
-              <AdvancedSwapDetails trade={trade} />
-              )}
+          <SwapBottomSection expanded={showPreview}>
+            <SwapBottomRevealable expanded={showPreview}>
+              <PreviewSwapSection
+                trade={trade}
+                acceptChangesRequired={acceptChangesRequired}
+                attemptingTxn={attemptingTxn}
+                txHash={txHash}
+                recipient={recipient}
+                allowedSlippage={allowedSlippage}
+                swapErrorMessage={swapErrorMessage}
+              />
+            </SwapBottomRevealable>
+            <BottomSectionButton>
+              {acceptChangesRequired &&
+                <SwapShowAcceptChanges justify="center" gap={'0px'}>
+                  <RowFixed>
+                    <StyledAlertTriangle/>
+                    <TYPE.main> Price Updated</TYPE.main>
+                  </RowFixed>
+                </SwapShowAcceptChanges>
+              }
               {swapIsUnsupported ? (
                 <ButtonPrimary disabled={true}>
                   <TYPE.main mb="4px">Unsupported Asset</TYPE.main>
@@ -359,21 +320,27 @@ export default function Swap() {
                   <TYPE.main mb="4px">Insufficient liquidity for this trade.</TYPE.main>
                   {singleHopOnly && <TYPE.main mb="4px">Try enabling multi-hop trades.</TYPE.main>}
                 </GreyCard>
+              ) : acceptChangesRequired ? (
+                <ButtonPrimary onClick={handleAcceptChanges}>
+                  <TYPE.main mb="4px">Accept Changes</TYPE.main>
+                </ButtonPrimary>
+              ) : swapErrorMessage ? (
+                <ButtonError error={true} onClick={handlePreviewDismiss}>
+                  <TYPE.main mb="4px">Close Preview</TYPE.main>
+                </ButtonError>
               ) : (
                 <ButtonError
                   onClick={() => {
-                    if (!inPreviewFlow) {
-                      handleOpenSwapPreview()
-                    } else if (isExpertMode) {
-                      handleSwap()
-                    } else {
+                    if (!showPreview) {
                       setSwapState({
                         tradeToConfirm: trade,
                         attemptingTxn: false,
                         swapErrorMessage: undefined,
-                        showConfirm: true,
+                        showPreview: true,
                         txHash: undefined
                       })
+                    } else {
+                      handleSwap()
                     }
                   }}
                   id="swap-button"
@@ -386,19 +353,13 @@ export default function Swap() {
                       ? swapInputError
                       : priceImpactSeverity > 3 && !isExpertMode
                       ? `Price Impact Too High`
-                      : inPreviewFlow
-                      ? `Swap${priceImpactSeverity > 2 ? ' Anyway' : ''}`
+                      : showPreview
+                      ? `Confirm Swap${priceImpactSeverity > 2 ? ' Anyway' : ''}`
                       : `Preview Swap`}
                   </Text>
                 </ButtonError>
               )}
-              {isExpertMode && swapErrorMessage ? <SwapCallbackError error={swapErrorMessage} /> : null}
-              {/* {betterTradeLinkV2 && !swapIsUnsupported && toggledVersion === Version.v1 ? (
-                <BetterTradeLink version={betterTradeLinkV2} />
-              ) : toggledVersion !== DEFAULT_VERSION && defaultTrade ? (
-                <DefaultVersionLink />
-              ) : null} */}
-            </AutoColumn>
+            </BottomSectionButton>
           </SwapBottomSection>
         </Wrapper>
       </CardBody>

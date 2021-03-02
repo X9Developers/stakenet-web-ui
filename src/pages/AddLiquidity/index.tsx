@@ -85,6 +85,7 @@ export default function AddLiquidity({
 
   // modal and loading
   const [showConfirm, setShowConfirm] = useState<boolean>(false)
+  console.log(showConfirm)
   const [attemptingTxn, setAttemptingTxn] = useState<boolean>(false) // clicked confirm
 
   // txn values
@@ -286,14 +287,14 @@ export default function AddLiquidity({
     [currencyIdA, history, currencyIdB]
   )
 
-  const handleDismissConfirmation = useCallback(() => {
-    setShowConfirm(false)
-    // if there was a tx hash, we want to clear the input
-    if (txHash) {
-      onFieldAInput('')
-    }
-    setTxHash('')
-  }, [onFieldAInput, txHash])
+  // const handleDismissConfirmation = useCallback(() => {
+  //   setShowConfirm(false)
+  //   // if there was a tx hash, we want to clear the input
+  //   if (txHash) {
+  //     onFieldAInput('')
+  //   }
+  //   setTxHash('')
+  // }, [onFieldAInput, txHash])
 
   const isCreate = history.location.pathname.includes('/create')
 
@@ -305,14 +306,12 @@ export default function AddLiquidity({
         <AddRemoveTabs creating={isCreate} adding={true} />
         <Wrapper>
           <TransactionConfirmationModal
-            isOpen={showConfirm}
-            onDismiss={handleDismissConfirmation}
             attemptingTxn={attemptingTxn}
             hash={txHash}
             content={() => (
               <ConfirmationModalContent
-                title={noLiquidity ? 'You are creating a pool' : 'You will receive'}
-                onDismiss={handleDismissConfirmation}
+                // title={noLiquidity ? 'You are creating a pool' : 'You will receive'}
+                // onDismiss={handleDismissConfirmation}
                 topContent={modalHeader}
                 bottomContent={modalBottom}
               />

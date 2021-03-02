@@ -1,6 +1,7 @@
-import { Currency, Pair } from '@uniswap/sdk'
+import { Currency, Pair, Trade } from '@uniswap/sdk'
 import React, { useState, useCallback } from 'react'
 import styled from 'styled-components'
+import { Text } from 'rebass'
 import { lighten } from 'polished'
 import { useCurrencyBalance } from '../../state/wallet/hooks'
 import CurrencySearchModal from '../SearchModal/CurrencySearchModal'
@@ -15,6 +16,7 @@ import { useActiveWeb3React } from '../../hooks'
 import { useTranslation } from 'react-i18next'
 import useTheme from '../../hooks/useTheme'
 import { AutoColumn } from 'components/Column'
+import TradePrice from 'components/swap/TradePrice'
 
 const InputRow = styled.div<{ selected: boolean }>`
   ${({ theme }) => theme.flexRowNoWrap}
@@ -108,6 +110,10 @@ const PercButton = styled.button<{ selected: boolean }>`
   }
 `
 
+const BottomSectionRow = styled(AutoRow)`
+  height: 40px;
+`
+
 const EmptyPercButtonRow = styled.div`
   width: 100%;
   height: 40px;
@@ -154,6 +160,7 @@ interface CurrencyInputPanelProps {
   id: string
   showCommonBases?: boolean
   customBalanceText?: string
+  trade?: Trade
 }
 
 export default function CurrencyInputPanel({
@@ -170,11 +177,13 @@ export default function CurrencyInputPanel({
   otherCurrency,
   id,
   showCommonBases,
-  customBalanceText
+  customBalanceText,
+  trade,
 }: CurrencyInputPanelProps) {
   const { t } = useTranslation()
 
   const [modalOpen, setModalOpen] = useState(false)
+  const [showInverted, setShowInverted] = useState<boolean>(false)
   const { account } = useActiveWeb3React()
   const selectedCurrencyBalance = useCurrencyBalance(account ?? undefined, currency ?? undefined)
   const theme = useTheme()
@@ -265,32 +274,45 @@ export default function CurrencyInputPanel({
             />
           )}
         </InputPanel>
-        { showPercButtons ?
-          <AutoRow justify="space-between">
-            <PercButton
-              disabled={!account || !currency}
-              onClick={() => onSetPerc != null && onSetPerc(0)}
-              selected={false}
-              >
-                MIN
-            </PercButton>
-            <PercButton
-              disabled={!account || !currency}
-              onClick={() => onSetPerc != null && onSetPerc(0.5)}
-              selected={false}
-              >
-                HALF
-            </PercButton>
-            <PercButton
-              disabled={!account || !currency}
-              onClick={() => onSetPerc != null && onSetPerc(1)}
-              selected={false}
-              >
-                MAX
-            </PercButton>
-          </AutoRow> :
-          <EmptyPercButtonRow/>
+        <BottomSectionRow justify="space-between">
+        { showPercButtons
+          ? <>
+              <PercButton
+                disabled={!account || !currency}
+                onClick={() => onSetPerc != null && onSetPerc(0)}
+                selected={false}
+                >
+                  MIN
+              </PercButton>
+              <PercButton
+                disabled={!account || !currency}
+                onClick={() => onSetPerc != null && onSetPerc(0.5)}
+                selected={false}
+                >
+                  HALF
+              </PercButton>
+              <PercButton
+                disabled={!account || !currency}
+                onClick={() => onSetPerc != null && onSetPerc(1)}
+                selected={false}
+                >
+                  MAX
+              </PercButton>
+            </>
+          : Boolean(trade)
+          ? <>
+              <Text fontWeight={500} fontSize={14} color={theme.text2}>
+                Price
+              </Text>
+              <TradePrice
+                price={trade?.executionPrice}
+                showInverted={showInverted}
+                setShowInverted={setShowInverted}
+              />
+            </>
+          : <EmptyPercButtonRow/>
         }
+        </BottomSectionRow>
       </AutoColumn>
     </CurrencyPanel>
   )

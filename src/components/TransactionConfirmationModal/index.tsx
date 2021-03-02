@@ -1,13 +1,12 @@
 import { ChainId, Currency } from '@uniswap/sdk'
 import React, { useContext } from 'react'
 import styled, { ThemeContext } from 'styled-components'
-import Modal from '../Modal'
 import { ExternalLink } from '../../theme'
 import { Text } from 'rebass'
-import { CloseIcon, CustomLightSpinner } from '../../theme/components'
-import { RowBetween, RowFixed } from '../Row'
+import { CustomLightSpinner } from '../../theme/components'
+import { RowFixed } from '../Row'
 import { AlertTriangle, ArrowUpCircle, CheckCircle } from 'react-feather'
-import { ButtonPrimary, ButtonLight } from '../Button'
+import { ButtonLight } from '../Button'
 import { AutoColumn, ColumnCenter } from '../Column'
 import Circle from '../../assets/images/blue-loader.svg'
 import MetaMaskLogo from '../../assets/images/metamask.png'
@@ -38,14 +37,10 @@ const StyledLogo = styled.img`
   margin-left: 6px;
 `
 
-function ConfirmationPendingContent({ onDismiss, pendingText }: { onDismiss: () => void; pendingText: string }) {
+function ConfirmationPendingContent({ pendingText }: { pendingText: string }) {
   return (
     <Wrapper>
       <Section>
-        <RowBetween>
-          <div />
-          <CloseIcon onClick={onDismiss} />
-        </RowBetween>
         <ConfirmedIcon>
           <CustomLightSpinner src={Circle} alt="loader" size={'90px'} />
         </ConfirmedIcon>
@@ -68,12 +63,10 @@ function ConfirmationPendingContent({ onDismiss, pendingText }: { onDismiss: () 
 }
 
 function TransactionSubmittedContent({
-  onDismiss,
   chainId,
   hash,
   currencyToAdd
 }: {
-  onDismiss: () => void
   hash: string | undefined
   chainId: ChainId
   currencyToAdd?: Currency | undefined
@@ -87,10 +80,6 @@ function TransactionSubmittedContent({
   return (
     <Wrapper>
       <Section>
-        <RowBetween>
-          <div />
-          <CloseIcon onClick={onDismiss} />
-        </RowBetween>
         <ConfirmedIcon>
           <ArrowUpCircle strokeWidth={0.5} size={90} color={theme.primary1} />
         </ConfirmedIcon>
@@ -119,11 +108,6 @@ function TransactionSubmittedContent({
               )}
             </ButtonLight>
           )}
-          <ButtonPrimary onClick={onDismiss} style={{ margin: '20px 0 0 0' }}>
-            <Text fontWeight={500} fontSize={20}>
-              Close
-            </Text>
-          </ButtonPrimary>
         </AutoColumn>
       </Section>
     </Wrapper>
@@ -131,25 +115,15 @@ function TransactionSubmittedContent({
 }
 
 export function ConfirmationModalContent({
-  title,
   bottomContent,
-  onDismiss,
   topContent
 }: {
-  title: string
-  onDismiss: () => void
   topContent: () => React.ReactNode
   bottomContent: () => React.ReactNode
 }) {
   return (
     <Wrapper>
       <Section>
-        <RowBetween>
-          <Text fontWeight={500} fontSize={20}>
-            {title}
-          </Text>
-          <CloseIcon onClick={onDismiss} />
-        </RowBetween>
         {topContent()}
       </Section>
       <BottomSection gap="12px">{bottomContent()}</BottomSection>
@@ -157,17 +131,11 @@ export function ConfirmationModalContent({
   )
 }
 
-export function TransactionErrorContent({ message, onDismiss }: { message: string; onDismiss: () => void }) {
+export function TransactionErrorContent({ message }: { message: string }) {
   const theme = useContext(ThemeContext)
   return (
     <Wrapper>
       <Section>
-        <RowBetween>
-          <Text fontWeight={500} fontSize={20}>
-            Error
-          </Text>
-          <CloseIcon onClick={onDismiss} />
-        </RowBetween>
         <AutoColumn style={{ marginTop: 20, padding: '2rem 0' }} gap="24px" justify="center">
           <AlertTriangle color={theme.red1} style={{ strokeWidth: 1.5 }} size={64} />
           <Text fontWeight={500} fontSize={16} color={theme.red1} style={{ textAlign: 'center', width: '85%' }}>
@@ -175,16 +143,11 @@ export function TransactionErrorContent({ message, onDismiss }: { message: strin
           </Text>
         </AutoColumn>
       </Section>
-      <BottomSection gap="12px">
-        <ButtonPrimary onClick={onDismiss}>Dismiss</ButtonPrimary>
-      </BottomSection>
     </Wrapper>
   )
 }
 
 interface ConfirmationModalProps {
-  isOpen: boolean
-  onDismiss: () => void
   hash: string | undefined
   content: () => React.ReactNode
   attemptingTxn: boolean
@@ -193,8 +156,6 @@ interface ConfirmationModalProps {
 }
 
 export default function TransactionConfirmationModal({
-  isOpen,
-  onDismiss,
   attemptingTxn,
   hash,
   pendingText,
@@ -207,19 +168,18 @@ export default function TransactionConfirmationModal({
 
   // confirmation screen
   return (
-    <Modal isOpen={isOpen} onDismiss={onDismiss} maxHeight={90}>
+    <>
       {attemptingTxn ? (
-        <ConfirmationPendingContent onDismiss={onDismiss} pendingText={pendingText} />
+        <ConfirmationPendingContent pendingText={pendingText} />
       ) : hash ? (
         <TransactionSubmittedContent
           chainId={chainId}
           hash={hash}
-          onDismiss={onDismiss}
           currencyToAdd={currencyToAdd}
         />
       ) : (
         content()
       )}
-    </Modal>
+    </>
   )
 }

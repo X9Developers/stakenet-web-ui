@@ -66,6 +66,9 @@ export default function CurrencySwapPreviewPanel({
             >
                 {currencyAmount.toSignificant(6)}
             </AlignedTruncatedText>
+            <AlignedText fontSize={14} fontWeight={300} input={input}>
+                ${(parseFloat(currencyAmount.toExact()) * 1800).toFixed(2)} USD
+            </AlignedText>
         </PaddedAutoColumn>
         <GlowingCurrencyLogo currency={currencyAmount.currency} size="100px" hexRounding="md"/>
     </ReversibleAutoRow>

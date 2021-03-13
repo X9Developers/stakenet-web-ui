@@ -1,8 +1,8 @@
 import { JSBI, Token, Trade } from '@uniswap/sdk'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import ReactGA from 'react-ga'
 import { Text } from 'rebass'
-import styled from 'styled-components'
+import styled, { ThemeContext } from 'styled-components'
 import { ButtonError, ButtonLight, ButtonPrimary } from '../../components/Button'
 import { GreyCard } from '../../components/Card'
 import { AutoColumn } from '../../components/Column'
@@ -10,7 +10,7 @@ import PreviewSwapSection from '../../components/swap/PreviewSwapSection'
 import CurrencyInputPanel from '../../components/CurrencyInputPanel'
 import { SwapPoolTabs } from '../../components/NavigationTabs'
 import confirmPriceImpactWithoutFee from '../../components/swap/confirmPriceImpactWithoutFee'
-import { SwapShowAcceptChanges, Wrapper } from '../../components/swap/styleds'
+import { GradientDividerRow, SwapInfoAutoColumn, SwapShowAcceptChanges, Wrapper } from '../../components/swap/styleds'
 import TokenWarningModal from '../../components/TokenWarningModal'
 import SwapHeader from '../../components/swap/SwapHeader'
 
@@ -33,24 +33,60 @@ import { percAmountSpend } from '../../utils/maxAmountSpend'
 import { computeTradePriceBreakdown, warningSeverity } from '../../utils/prices'
 import CardBody from '../CardBody'
 import { useIsTransactionUnsupported } from 'hooks/Trades'
-import { SwapTopSection, SwapBottomSection, SwapBottomSectionFiller, SwapBottomRevealable } from 'components/SwapWrappers'
+import { SwapTopSection, SwapBottomSection, SwapBottomSectionFiller, SwapBottomRevealable, PercButton } from 'components/SwapWrappers'
 import BigSwapArrow from 'components/swap/BigSwapArrow'
 import { tradeMeaningfullyDiffers } from 'utils/trades'
-import { RowFixed } from 'components/Row'
+import { AutoRow, RowFixed } from 'components/Row'
 import { AlertTriangle } from 'react-feather'
+import { isAddress, shortenAddress } from 'utils'
+import SwapModalFooter from 'components/swap/SwapModalFooter'
+import QuestionHelper from 'components/QuestionHelper'
+import TradePrice from 'components/swap/TradePrice'
 
 const BottomSectionButton = styled.div`
+  display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   position: relative;
   z-index: 4;
+  position: relative;
+  left: 0;
+  right: 0;
+`
+
+const FeeCalculationWrapper = styled.div`
+  min-height: 40px;
+  height: 40px;
+  width: 100%;
+`
+
+const SwapStatsSlidingPreviewSection = styled(AutoColumn)<{trade: boolean}>`
+  transition: opacity 600ms;
+  width: 100%;
+  max-width: 400px;
+  margin: auto;
+  margin-bottom: 18px;
+  gap: 18px;
+  opacity: ${({ trade }) => trade ? 1 : 0};
 `
 
 const StyledAlertTriangle = styled(AlertTriangle)`
   margin-right: 8px;
   width: 20px;
   height: 20px;
+`
+
+const BoldPrice = styled.span`
+  font-weight: 700;
+  font-size: 18px;
+`
+
+const MobileReveal = styled(AutoColumn)`
+  display: none;
+  ${({ theme }) => theme.mediaWidth.upToSmall`
+    display: grid;
+`};
 `
 
 export default function Swap() {
@@ -79,6 +115,8 @@ export default function Swap() {
     })
 
   const { account } = useActiveWeb3React()
+  const theme = useContext(ThemeContext)
+  const [showInverted, setShowInverted] = useState<boolean>(false)
 
   // toggle wallet when disconnected
   const toggleWalletModal = useWalletModalToggle()
@@ -100,6 +138,7 @@ export default function Swap() {
   } = useDerivedSwapInfo()
   const { address: recipientAddress } = useENSAddress(recipient)
   const trade = v2Trade
+  console.log({ trade, nullish: trade != null })
 
   const parsedAmounts = {
     [Field.INPUT]: independentField === Field.INPUT ? parsedAmount : trade?.inputAmount,
@@ -254,7 +293,7 @@ export default function Swap() {
       />
       <SwapPoolTabs active={'swap'} />
       <CardBody>
-        <SwapHeader inPreviewFlow={showPreview} onCancelPreview={handlePreviewDismiss}/>
+        <SwapHeader previewing={showPreview} onCancelPreview={handlePreviewDismiss}/>
         <Wrapper id="swap-page">
           <AutoColumn gap={'md'}>
             <SwapTopSection id='swap-top-section' minHeight={(700 - 60) / 2}>
@@ -269,9 +308,46 @@ export default function Swap() {
                 otherCurrency={currencies[Field.OUTPUT]}
                 id="swap-currency-input"
               />
-              <BigSwapArrow
-                onPress={onSwitchTokens}
-              />
+              <AutoRow justify="center">
+                <MobileReveal>
+                  <PercButton
+                    disabled={!account || !currencies[Field.INPUT]}
+                    onClick={() => handleSetPerc(0)}
+                    selected={false}
+                    >
+                      MIN
+                  </PercButton>
+                  <PercButton
+                    disabled={!account || !currencies[Field.INPUT]}
+                    onClick={() => handleSetPerc(0.5)}
+                    selected={false}
+                    >
+                      HALF
+                  </PercButton>
+                  <PercButton
+                    disabled={!account || !currencies[Field.INPUT]}
+                    onClick={() => handleSetPerc(1)}
+                    selected={false}
+                    >
+                      MAX
+                  </PercButton>
+                </MobileReveal>
+                <BigSwapArrow
+                  onPress={onSwitchTokens}
+                />
+
+                <MobileReveal>
+                  <Text fontWeight={500} fontSize={14} color={theme.text2} textAlign="right">
+                    Price
+                  </Text>
+                  <TradePrice
+                    price={trade?.executionPrice}
+                    showInverted={showInverted}
+                    vertical={true}
+                    setShowInverted={setShowInverted}
+                  />
+                </MobileReveal>
+              </AutoRow>
               <CurrencyInputPanel
                 label={independentField === Field.INPUT && trade ? 'To (estimated)' : 'To'}
                 value={formattedAmounts[Field.OUTPUT]}
@@ -288,8 +364,8 @@ export default function Swap() {
           </AutoColumn>
 
           <SwapBottomSectionFiller/>
-          <SwapBottomSection expanded={showPreview}>
-            <SwapBottomRevealable expanded={showPreview}>
+          <SwapBottomSection trade={!!trade} previewing={showPreview}>
+            <SwapBottomRevealable previewing={showPreview}>
               <PreviewSwapSection
                 trade={trade}
                 acceptChangesRequired={acceptChangesRequired}
@@ -300,6 +376,44 @@ export default function Swap() {
                 swapErrorMessage={swapErrorMessage}
               />
             </SwapBottomRevealable>
+            <SwapStatsSlidingPreviewSection trade={trade != null}>
+              <SwapInfoAutoColumn visible={showPreview && !!trade} justify="flex-start" gap="18px" style={{ padding: '12px 0 0 0px' }}>
+                <GradientDividerRow />
+                { showPreview &&
+                  <FeeCalculationWrapper>
+                    <AutoRow justify="center">
+                      <TYPE.black color={theme.text2} fontSize={14} fontWeight={400}>
+                        Trading fee:
+                      </TYPE.black>
+                      <QuestionHelper text="Fee is split between orderbook hosting masternodes and liquidity providers." />
+                    </AutoRow>
+                    <TYPE.black fontSize={14} marginLeft={'4px'} width={'100%'} textAlign="center">
+                      0.3% * {`$${(parseFloat(trade?.inputAmount.toExact() || '0') * 1800).toFixed(2)} USD`} =
+                      <BoldPrice>{` $${(parseFloat(trade?.inputAmount.toExact() || '0') * 1800 * 0.2).toFixed(2)} USD`}</BoldPrice>
+                    </TYPE.black>
+                  </FeeCalculationWrapper>
+                }
+                <GradientDividerRow />
+              </SwapInfoAutoColumn>
+              { showPreview && trade != null && recipient !== null &&
+                <SwapInfoAutoColumn visible={showPreview && trade != null && recipient !== null} justify="flex-start" gap="18px" style={{ padding: '12px 0 0 0px' }}>
+                    <TYPE.main>
+                      Output will be sent to{' '}
+                      <b title={recipient}>{isAddress(recipient) ? shortenAddress(recipient) : recipient}</b>
+                    </TYPE.main>
+                  <GradientDividerRow />
+                </SwapInfoAutoColumn>
+              }
+              <SwapInfoAutoColumn visible={!!trade} justify="space-between" gap="18px" style={{ padding: '12px 0 0 0px' }}>
+                { trade != null &&
+                  <SwapModalFooter
+                    trade={trade}
+                    allowedSlippage={allowedSlippage}
+                  />
+                }
+                <GradientDividerRow />
+              </SwapInfoAutoColumn>
+            </SwapStatsSlidingPreviewSection>
             <BottomSectionButton>
               {acceptChangesRequired &&
                 <SwapShowAcceptChanges justify="center" gap={'0px'}>

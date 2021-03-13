@@ -153,3 +153,20 @@ export const Separator = styled.div`
   height: 1px;
   background-color: ${({ theme }) => theme.bg2};
 `
+
+export const SwapInfoAutoColumn = styled(AutoColumn)<{visible: boolean}>`
+  transition: opacity 600ms;
+  width: 100%;
+  max-width: 400px;
+  margin: auto;
+  opacity: ${({ visible }) => visible ? 1 : 0};
+`
+
+export const GradientDividerRow = styled.div`
+  width: 200%;
+  position: relative;
+  left: -50%;
+  height: 2px;
+  margin: auto;
+  background: ${({ theme }) => `linear-gradient(to right, ${theme.text3}00, ${theme.text3}, ${theme.text3}00)`};
+`

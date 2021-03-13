@@ -112,6 +112,9 @@ const PercButton = styled.button<{ selected: boolean }>`
 
 const BottomSectionRow = styled(AutoRow)`
   height: 40px;
+  ${({ theme }) => theme.mediaWidth.upToSmall`
+    display: none;
+  `};
 `
 
 const EmptyPercButtonRow = styled.div`
@@ -226,8 +229,7 @@ export default function CurrencyInputPanel({
                         : currency?.symbol) || t('selectToken')}
                     </StyledTokenName>
                   )}
-                  {account && (
-                    <TYPE.body
+                  <TYPE.body
                       color={theme.text2}
                       fontWeight={500}
                       fontSize={14}
@@ -237,7 +239,6 @@ export default function CurrencyInputPanel({
                         ? selectedCurrencyBalance?.toSignificant(6)
                         : ' -'}
                     </TYPE.body>
-                  )}
                 </AutoColumn>
               </CurrencyAndBalanceText>
             </Aligner>
@@ -252,6 +253,7 @@ export default function CurrencyInputPanel({
                   <NumericalInput
                     className="token-amount-input"
                     value={value}
+                    fontSize={'20px'}
                     onUserInput={val => {
                       onUserInput(val)
                     }}
@@ -261,6 +263,16 @@ export default function CurrencyInputPanel({
                   )} */}
                 </>
               )}
+              <TYPE.body
+                color={theme.text2}
+                fontWeight={500}
+                fontSize={14}
+                style={{ display: 'inline', marginLeft: '20px' }}
+              >
+                {!hideBalance && !!currency && !isNaN(parseFloat(value))
+                  ? `$${(parseFloat(value) * 1800).toFixed(2)} USD`
+                  : ' -'}
+              </TYPE.body>
             </InputRow>
           </Container>
           {!disableCurrencySelect && onCurrencySelect && (

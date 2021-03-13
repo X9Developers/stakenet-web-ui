@@ -32,10 +32,10 @@ const CloseIconWrapper = styled.div`
 `
 
 export default function SwapHeader({
-  inPreviewFlow = false,
+  previewing: inPreviewFlow = false,
   onCancelPreview,
 }: {
-  inPreviewFlow: boolean,
+  previewing: boolean,
   onCancelPreview: () => void,
 }) {
   return (

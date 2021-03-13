@@ -13,18 +13,16 @@ import MetaMaskLogo from '../../assets/images/metamask.png'
 import { getEtherscanLink } from '../../utils'
 import { useActiveWeb3React } from '../../hooks'
 import useAddTokenToMetamask from 'hooks/useAddTokenToMetamask'
+import { SwapInfoAutoColumn } from 'components/swap/styleds'
 
+const WrappingAutoColumn = styled(AutoColumn)`
+  padding: 0px 24px;
+`
 const Wrapper = styled.div`
   width: 100%;
 `
 const Section = styled(AutoColumn)`
   padding: 24px;
-`
-
-const BottomSection = styled(Section)`
-  background-color: ${({ theme }) => theme.bg2};
-  border-bottom-left-radius: 20px;
-  border-bottom-right-radius: 20px;
 `
 
 const ConfirmedIcon = styled(ColumnCenter)`
@@ -122,12 +120,12 @@ export function ConfirmationModalContent({
   bottomContent: () => React.ReactNode
 }) {
   return (
-    <Wrapper>
-      <Section>
-        {topContent()}
-      </Section>
-      <BottomSection gap="12px">{bottomContent()}</BottomSection>
-    </Wrapper>
+    <WrappingAutoColumn gap="18px">
+      {topContent()}
+      <SwapInfoAutoColumn visible={true} gap="18px">
+        {bottomContent()}
+      </SwapInfoAutoColumn>
+    </WrappingAutoColumn>
   )
 }
 

@@ -4,7 +4,6 @@ import TransactionConfirmationModal, {
   ConfirmationModalContent,
   TransactionErrorContent
 } from '../TransactionConfirmationModal'
-import SwapModalFooter from './SwapModalFooter'
 import SwapModalHeader from './SwapModalHeader'
 
 export default function PreviewSwapSection({
@@ -36,15 +35,6 @@ export default function PreviewSwapSection({
     ) : null
   }, [allowedSlippage, recipient, acceptChangesRequired, trade])
 
-  const modalBottom = useCallback(() => {
-    return trade ? (
-      <SwapModalFooter
-        trade={trade}
-        allowedSlippage={allowedSlippage}
-      />
-    ) : null
-  }, [allowedSlippage, acceptChangesRequired, swapErrorMessage, trade])
-
   // text to show while loading
   const pendingText = `Swapping ${trade?.inputAmount?.toSignificant(6)} ${
     trade?.inputAmount?.currency?.symbol
@@ -57,10 +47,10 @@ export default function PreviewSwapSection({
       ) : (
         <ConfirmationModalContent
           topContent={modalHeader}
-          bottomContent={modalBottom}
+          bottomContent={() => null}
         />
       ),
-    [modalBottom, modalHeader, swapErrorMessage]
+    [modalHeader, swapErrorMessage]
   )
 
   return (

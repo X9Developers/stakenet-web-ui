@@ -38,7 +38,6 @@ import BigSwapArrow from 'components/swap/BigSwapArrow'
 import { tradeMeaningfullyDiffers } from 'utils/trades'
 import { AutoRow, RowFixed } from 'components/Row'
 import { AlertTriangle } from 'react-feather'
-import { isAddress, shortenAddress } from 'utils'
 import SwapModalFooter from 'components/swap/SwapModalFooter'
 import QuestionHelper from 'components/QuestionHelper'
 import TradePrice from 'components/swap/TradePrice'
@@ -56,8 +55,6 @@ const BottomSectionButton = styled.div`
 `
 
 const FeeCalculationWrapper = styled.div`
-  min-height: 40px;
-  height: 40px;
   width: 100%;
 `
 
@@ -82,6 +79,12 @@ const BoldPrice = styled.span`
   font-size: 18px;
 `
 
+const MobileSpaceBetweenAutoRow = styled(AutoRow)`
+  justify-content: center;
+  ${({ theme }) => theme.mediaWidth.upToSmall`
+    justify-content: space-between;
+  `};
+`
 const MobileReveal = styled(AutoColumn)`
   display: none;
   ${({ theme }) => theme.mediaWidth.upToSmall`
@@ -308,7 +311,7 @@ export default function Swap() {
                 otherCurrency={currencies[Field.OUTPUT]}
                 id="swap-currency-input"
               />
-              <AutoRow justify="center">
+              <MobileSpaceBetweenAutoRow>
                 <MobileReveal>
                   <PercButton
                     disabled={!account || !currencies[Field.INPUT]}
@@ -347,7 +350,7 @@ export default function Swap() {
                     setShowInverted={setShowInverted}
                   />
                 </MobileReveal>
-              </AutoRow>
+              </MobileSpaceBetweenAutoRow>
               <CurrencyInputPanel
                 label={independentField === Field.INPUT && trade ? 'To (estimated)' : 'To'}
                 value={formattedAmounts[Field.OUTPUT]}
@@ -377,7 +380,7 @@ export default function Swap() {
               />
             </SwapBottomRevealable>
             <SwapStatsSlidingPreviewSection trade={trade != null}>
-              <SwapInfoAutoColumn visible={showPreview && !!trade} justify="flex-start" gap="18px" style={{ padding: '12px 0 0 0px' }}>
+              <SwapInfoAutoColumn visible={showPreview && !!trade} justify="flex-start" gap="18px" style={{ padding: '12px 0 0 0px', height: '100px' }}>
                 <GradientDividerRow />
                 { showPreview &&
                   <FeeCalculationWrapper>
@@ -395,7 +398,8 @@ export default function Swap() {
                 }
                 <GradientDividerRow />
               </SwapInfoAutoColumn>
-              { showPreview && trade != null && recipient !== null &&
+              {/* TODO: Reimplement recipient
+                { showPreview && trade != null && recipient !== null && 
                 <SwapInfoAutoColumn visible={showPreview && trade != null && recipient !== null} justify="flex-start" gap="18px" style={{ padding: '12px 0 0 0px' }}>
                     <TYPE.main>
                       Output will be sent to{' '}
@@ -403,8 +407,8 @@ export default function Swap() {
                     </TYPE.main>
                   <GradientDividerRow />
                 </SwapInfoAutoColumn>
-              }
-              <SwapInfoAutoColumn visible={!!trade} justify="space-between" gap="18px" style={{ padding: '12px 0 0 0px' }}>
+              } */}
+              <SwapInfoAutoColumn visible={!!trade} justify="space-between" gap="18px" style={{ padding: '6px 0 0 0px' }}>
                 { trade != null &&
                   <SwapModalFooter
                     trade={trade}

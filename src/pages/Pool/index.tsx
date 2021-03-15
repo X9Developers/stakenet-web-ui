@@ -133,11 +133,11 @@ export default function Pool() {
           <CardSection>
             <AutoColumn gap="md">
               <RowBetween>
-                <TYPE.white fontWeight={600}>Liquidity provider rewards</TYPE.white>
+                <TYPE.white fontWeight={600}>Stakenet liquidity</TYPE.white>
               </RowBetween>
               <RowBetween>
                 <TYPE.white fontSize={14}>
-                  {`Liquidity providers earn a 0.3% fee on all trades proportional to their share of the pool. Fees are added to the pool, accrue in real time and can be claimed by withdrawing your liquidity.`}
+                  {`Liquidity providers and orderbook hosting masternodes split the 0.3% trading fee. At the current dex volume, liquidity providers earn 67.5% of the fee. Liquidity, volume, and fees are shared between the web app and light wallet dexes.`}
                 </TYPE.white>
               </RowBetween>
               <ExternalLink

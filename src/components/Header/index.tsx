@@ -346,10 +346,7 @@ export default function Header() {
             {t('pool')}
           </StyledNavLink>
           <StyledNavLink id={`stake-nav-link`} to={'/uni'}>
-            XSN
-          </StyledNavLink>
-          <StyledNavLink id={`stake-nav-link`} to={'/vote'}>
-            Gov
+            Wallet
           </StyledNavLink>
           <StyledExternalLink id={`stake-nav-link`} href={'https://uniswap.info'}>
             BTC <span style={{ fontSize: '11px' }}>↗</span>

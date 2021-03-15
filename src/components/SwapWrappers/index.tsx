@@ -49,9 +49,9 @@ align-items: center;
 background: ${({ theme }) => `linear-gradient(to right, ${theme.bg4}, ${theme.bg5}, ${theme.bg4});`};
 z-index: 2;
 overflow: hidden;
-${({ theme, previewing }) => theme.mediaWidth.upToSmall`
+${({ theme, previewing, trade }) => theme.mediaWidth.upToSmall`
     top: ${previewing ? '0px' : 'calc(100% - 250px)'};
-    padding-bottom: 40px;
+    padding-bottom: ${trade ? 40 : 90}px;
     min-height: 250px;
 `};
 `

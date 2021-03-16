@@ -41,6 +41,7 @@ import { AlertTriangle } from 'react-feather'
 import SwapModalFooter from 'components/swap/SwapModalFooter'
 import QuestionHelper from 'components/QuestionHelper'
 import TradePrice from 'components/swap/TradePrice'
+import { STAKENET_FLAT_FEE } from 'constants/'
 
 const BottomSectionButton = styled.div`
   display: flex;
@@ -187,11 +188,9 @@ export default function Swap() {
   }
 
   const formattedUsdEquivalencies = {
-    [Field.INPUT]: currencyBalances[Field.INPUT] != null && usdRelations[Field.INPUT] != null ? `$${currencyBalances[Field.INPUT]!.multiply(usdRelations[Field.INPUT]!).toFixed(6)} USD` : '-',
-    [Field.OUTPUT]: currencyBalances[Field.OUTPUT] != null && usdRelations[Field.OUTPUT] != null ? `$${currencyBalances[Field.OUTPUT]!.multiply(usdRelations[Field.OUTPUT]!).toFixed(6)} USD` : '-',
+    [Field.INPUT]: usdRelations.INPUT != null ? `$${usdRelations.INPUT.toFixed(2)} USD` : '-',
+    [Field.OUTPUT]: usdRelations.OUTPUT != null ? `$${usdRelations.OUTPUT.toFixed(2)} USD` : '-',
   }
-
-  console.log({ usd: parseFloat(currencyBalances[Field.INPUT]?.toSignificant(6) || '0') * parseFloat(usdRelations[Field.INPUT]?.toSignificant(6) || '0'), inputBal: currencyBalances[Field.INPUT], inputSig: currencyBalances[Field.INPUT]?.toSignificant(6), inputRel: usdRelations[Field.INPUT], relUSDSig: usdRelations[Field.INPUT]?.toSignificant(6) })
 
   const route = trade?.route
   const userHasSpecifiedInputOutput = Boolean(
@@ -392,7 +391,7 @@ export default function Swap() {
             <SwapStatsSlidingPreviewSection trade={trade != null}>
               <SwapInfoAutoColumn visible={showPreview && !!trade} justify="flex-start" gap="18px" style={{ padding: '12px 0 0 0px', height: '100px' }}>
                 <GradientDividerRow />
-                { showPreview &&
+                { showPreview && trade &&
                   <FeeCalculationWrapper>
                     <AutoRow justify="center">
                       <TYPE.black color={theme.text2} fontSize={14} fontWeight={400}>
@@ -401,8 +400,8 @@ export default function Swap() {
                       <QuestionHelper text="Fee is split between orderbook hosting masternodes and liquidity providers." />
                     </AutoRow>
                     <TYPE.black fontSize={14} marginLeft={'4px'} width={'100%'} textAlign="center">
-                      0.3% * {`$${(parseFloat(trade?.inputAmount.toExact() || '0') * (1800 || 0)).toFixed(2)} USD`} =
-                      <BoldPrice>{` $${(parseFloat(trade?.inputAmount.toExact() || '0') * (1800 || 0) * 0.003).toFixed(2)} USD`}</BoldPrice>
+                      0.3% * { formattedUsdEquivalencies.INPUT ?? '-' } =
+                      <BoldPrice>{` $${usdRelations.INPUT?.multiply(STAKENET_FLAT_FEE).toFixed(2)} USD`}</BoldPrice>
                     </TYPE.black>
                   </FeeCalculationWrapper>
                 }

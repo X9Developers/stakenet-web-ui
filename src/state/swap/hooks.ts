@@ -106,15 +106,6 @@ function involvesAddress(trade: Trade, checksummedAddress: string): boolean {
   )
 }
 
-export function useEthPrice(): {
-  ethPrice: number | undefined
-} {
-  const ethPrice = 1800
-  return {
-    ethPrice
-  }
-}
-
 // from the current swap inputs, compute the best trade and return it.
 export function useDerivedSwapInfo(): {
   currencies: { [field in Field]?: Currency }

@@ -1,7 +1,7 @@
 import useENS from '../../hooks/useENS'
 import { Version } from '../../hooks/useToggledVersion'
 import { parseUnits } from '@ethersproject/units'
-import { Currency, CurrencyAmount, ETHER, JSBI, Token, TokenAmount, Trade } from '@uniswap/sdk'
+import { Currency, CurrencyAmount, ETHER, JSBI, Price, Token, TokenAmount, Trade } from '@uniswap/sdk'
 import { ParsedQs } from 'qs'
 import { useCallback, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
@@ -106,10 +106,20 @@ function involvesAddress(trade: Trade, checksummedAddress: string): boolean {
   )
 }
 
+export function useEthPrice(): {
+  ethPrice: number | undefined
+} {
+  const ethPrice = 1800
+  return {
+    ethPrice
+  }
+}
+
 // from the current swap inputs, compute the best trade and return it.
 export function useDerivedSwapInfo(): {
   currencies: { [field in Field]?: Currency }
   currencyBalances: { [field in Field]?: CurrencyAmount }
+  usdRelations: { [field in Field]?: Price | undefined}
   parsedAmount: CurrencyAmount | undefined
   v2Trade: Trade | undefined
   inputError?: string
@@ -153,6 +163,14 @@ export function useDerivedSwapInfo(): {
   const currencies: { [field in Field]?: Currency } = {
     [Field.INPUT]: inputCurrency ?? undefined,
     [Field.OUTPUT]: outputCurrency ?? undefined
+  }
+
+  const usdtCurrency = useCurrency('0xdAC17F958D2ee523a2206206994597C13D831ec7') ?? undefined
+  const usdtCurrencyAmount = tryParseAmount('1.0000', usdtCurrency ?? undefined)
+
+  const usdRelations: { [field in Field]?: Price | undefined} = {
+    [Field.INPUT]: useTradeExactIn(usdtCurrencyAmount, currencies[Field.INPUT])?.executionPrice?.invert(),
+    [Field.OUTPUT]: useTradeExactIn(usdtCurrencyAmount, currencies[Field.OUTPUT])?.executionPrice?.invert(),
   }
 
   // get link to trade on v1, if a better rate exists
@@ -213,7 +231,8 @@ export function useDerivedSwapInfo(): {
     parsedAmount,
     v2Trade: v2Trade ?? undefined,
     inputError,
-    v1Trade
+    v1Trade,
+    usdRelations,
   }
 }
 

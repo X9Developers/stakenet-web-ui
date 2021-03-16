@@ -143,12 +143,6 @@ export default function Swap() {
   } = useDerivedSwapInfo()
   const { address: recipientAddress } = useENSAddress(recipient)
   const trade = v2Trade
-  console.log({ trade,
-    currencyBalances,
-    parsedAmount,
-    currencies,
-    usdPrices: usdRelations[Field.OUTPUT]?.toSignificant(6),
-  })
 
   const parsedAmounts = {
     [Field.INPUT]: independentField === Field.INPUT ? parsedAmount : trade?.inputAmount,
@@ -193,9 +187,11 @@ export default function Swap() {
   }
 
   const formattedUsdEquivalencies = {
-    [Field.INPUT]: currencyBalances[Field.INPUT] != null && usdRelations[Field.INPUT] != null ? `$${currencyBalances[Field.INPUT]!.multiply(usdRelations[Field.INPUT]!.raw).toSignificant(6)} USD` : '-',
-    [Field.OUTPUT]: currencyBalances[Field.OUTPUT] != null && usdRelations[Field.OUTPUT] != null ? `$${currencyBalances[Field.INPUT]!.multiply(usdRelations[Field.INPUT]!.raw).toSignificant(6)} USD` : '-',
+    [Field.INPUT]: currencyBalances[Field.INPUT] != null && usdRelations[Field.INPUT] != null ? `$${currencyBalances[Field.INPUT]!.multiply(usdRelations[Field.INPUT]!).toFixed(6)} USD` : '-',
+    [Field.OUTPUT]: currencyBalances[Field.OUTPUT] != null && usdRelations[Field.OUTPUT] != null ? `$${currencyBalances[Field.OUTPUT]!.multiply(usdRelations[Field.OUTPUT]!).toFixed(6)} USD` : '-',
   }
+
+  console.log({ usd: parseFloat(currencyBalances[Field.INPUT]?.toSignificant(6) || '0') * parseFloat(usdRelations[Field.INPUT]?.toSignificant(6) || '0'), inputBal: currencyBalances[Field.INPUT], inputSig: currencyBalances[Field.INPUT]?.toSignificant(6), inputRel: usdRelations[Field.INPUT], relUSDSig: usdRelations[Field.INPUT]?.toSignificant(6) })
 
   const route = trade?.route
   const userHasSpecifiedInputOutput = Boolean(

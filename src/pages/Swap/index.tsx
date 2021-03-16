@@ -41,6 +41,7 @@ import { AlertTriangle } from 'react-feather'
 import SwapModalFooter from 'components/swap/SwapModalFooter'
 import QuestionHelper from 'components/QuestionHelper'
 import TradePrice from 'components/swap/TradePrice'
+import { STAKENET_FLAT_FEE } from '../../constants/index'
 
 const BottomSectionButton = styled.div`
   display: flex;
@@ -80,6 +81,7 @@ const BoldPrice = styled.span`
 `
 
 const MobileSpaceBetweenAutoRow = styled(AutoRow)`
+  flex: 1;
   justify-content: center;
   ${({ theme }) => theme.mediaWidth.upToSmall`
     justify-content: space-between;
@@ -137,11 +139,11 @@ export default function Swap() {
     currencyBalances,
     parsedAmount,
     currencies,
-    inputError: swapInputError
+    inputError: swapInputError,
+    usdRelations,
   } = useDerivedSwapInfo()
   const { address: recipientAddress } = useENSAddress(recipient)
   const trade = v2Trade
-  console.log({ trade, nullish: trade != null })
 
   const parsedAmounts = {
     [Field.INPUT]: independentField === Field.INPUT ? parsedAmount : trade?.inputAmount,
@@ -183,6 +185,11 @@ export default function Swap() {
   const formattedAmounts = {
     [independentField]: typedValue,
     [dependentField]: parsedAmounts[dependentField]?.toSignificant(6) ?? ''
+  }
+
+  const formattedUsdEquivalencies = {
+    [Field.INPUT]: usdRelations.INPUT != null ? `$${usdRelations.INPUT.toFixed(2)} USD` : '-',
+    [Field.OUTPUT]: usdRelations.OUTPUT != null ? `$${usdRelations.OUTPUT.toFixed(2)} USD` : '-',
   }
 
   const route = trade?.route
@@ -309,6 +316,7 @@ export default function Swap() {
                 onSetPerc={handleSetPerc}
                 onCurrencySelect={handleInputSelect}
                 otherCurrency={currencies[Field.OUTPUT]}
+                usdEquivalency={formattedUsdEquivalencies[Field.INPUT]}
                 id="swap-currency-input"
               />
               <MobileSpaceBetweenAutoRow>
@@ -359,6 +367,7 @@ export default function Swap() {
                 currency={currencies[Field.OUTPUT]}
                 onCurrencySelect={handleOutputSelect}
                 otherCurrency={currencies[Field.INPUT]}
+                usdEquivalency={formattedUsdEquivalencies[Field.OUTPUT]}
                 id="swap-currency-output"
                 trade={trade}
               />
@@ -377,12 +386,13 @@ export default function Swap() {
                 recipient={recipient}
                 allowedSlippage={allowedSlippage}
                 swapErrorMessage={swapErrorMessage}
+                usdEquivalencies={formattedUsdEquivalencies}
               />
             </SwapBottomRevealable>
             <SwapStatsSlidingPreviewSection trade={trade != null}>
               <SwapInfoAutoColumn visible={showPreview && !!trade} justify="flex-start" gap="18px" style={{ padding: '12px 0 0 0px', height: '100px' }}>
                 <GradientDividerRow />
-                { showPreview &&
+                { showPreview && trade &&
                   <FeeCalculationWrapper>
                     <AutoRow justify="center">
                       <TYPE.black color={theme.text2} fontSize={14} fontWeight={400}>
@@ -391,8 +401,8 @@ export default function Swap() {
                       <QuestionHelper text="Fee is split between orderbook hosting masternodes and liquidity providers." />
                     </AutoRow>
                     <TYPE.black fontSize={14} marginLeft={'4px'} width={'100%'} textAlign="center">
-                      0.3% * {`$${(parseFloat(trade?.inputAmount.toExact() || '0') * 1800).toFixed(2)} USD`} =
-                      <BoldPrice>{` $${(parseFloat(trade?.inputAmount.toExact() || '0') * 1800 * 0.2).toFixed(2)} USD`}</BoldPrice>
+                      0.3% * { formattedUsdEquivalencies.INPUT ?? '-' } =
+                      <BoldPrice>{` $${usdRelations.INPUT?.multiply(STAKENET_FLAT_FEE).toFixed(2)} USD`}</BoldPrice>
                     </TYPE.black>
                   </FeeCalculationWrapper>
                 }

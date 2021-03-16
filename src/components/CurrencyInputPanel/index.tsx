@@ -160,6 +160,7 @@ interface CurrencyInputPanelProps {
   pair?: Pair | null
   hideInput?: boolean
   otherCurrency?: Currency | null
+  usdEquivalency?: string
   id: string
   showCommonBases?: boolean
   customBalanceText?: string
@@ -177,6 +178,7 @@ export default function CurrencyInputPanel({
   hideBalance = false,
   pair = null, // used for double token logo
   hideInput = false,
+  usdEquivalency = '-',
   otherCurrency,
   id,
   showCommonBases,
@@ -269,9 +271,7 @@ export default function CurrencyInputPanel({
                 fontSize={14}
                 style={{ display: 'inline', marginLeft: '20px' }}
               >
-                {!hideBalance && !!currency && !isNaN(parseFloat(value))
-                  ? `$${(parseFloat(value) * 1800).toFixed(2)} USD`
-                  : ' -'}
+                { usdEquivalency }
               </TYPE.body>
             </InputRow>
           </Container>

@@ -110,6 +110,7 @@ function involvesAddress(trade: Trade, checksummedAddress: string): boolean {
 export function useDerivedSwapInfo(): {
   currencies: { [field in Field]?: Currency }
   currencyBalances: { [field in Field]?: CurrencyAmount }
+  usdRelations: { [field in Field]?: CurrencyAmount | undefined}
   parsedAmount: CurrencyAmount | undefined
   v2Trade: Trade | undefined
   inputError?: string
@@ -207,13 +208,21 @@ export function useDerivedSwapInfo(): {
     inputError = 'Insufficient ' + amountIn.currency.symbol + ' balance'
   }
 
+  const usdtCurrency = useCurrency('0xdAC17F958D2ee523a2206206994597C13D831ec7') ?? undefined
+
+  const usdRelations: { [field in Field]?: CurrencyAmount | undefined } = {
+    [Field.INPUT]: useTradeExactIn(v2Trade?.inputAmount, usdtCurrency)?.outputAmount,
+    [Field.OUTPUT]: useTradeExactIn(v2Trade?.outputAmount, usdtCurrency)?.outputAmount,
+  }
+
   return {
     currencies,
     currencyBalances,
     parsedAmount,
     v2Trade: v2Trade ?? undefined,
     inputError,
-    v1Trade
+    v1Trade,
+    usdRelations,
   }
 }
 

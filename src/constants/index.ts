@@ -215,4 +215,4 @@ export const BLOCKED_ADDRESSES: string[] = [
 ]
 
 // Stakenet flat fee percent
-export const STAKENET_FLAT_FEE = new Percent('3', '10')
+export const STAKENET_FLAT_FEE = new Percent('3', '1000')

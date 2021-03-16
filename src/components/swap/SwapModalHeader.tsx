@@ -13,11 +13,13 @@ export default function SwapModalHeader({
   allowedSlippage,
   recipient,
   acceptChangesRequired,
+  usdEquivalencies,
 }: {
   trade: Trade
   allowedSlippage: number
   recipient: string | null
   acceptChangesRequired: boolean
+  usdEquivalencies: { [field in Field]: string }
 }) {
   const { priceImpactWithoutFee } = useMemo(() => computeTradePriceBreakdown(trade), [trade])
   const priceImpactSeverity = warningSeverity(priceImpactWithoutFee)
@@ -30,6 +32,7 @@ export default function SwapModalHeader({
         <CurrencySwapPreviewPanel
           field={Field.INPUT}
           currencyAmount={trade.inputAmount}
+          usdEquivalency={usdEquivalencies[Field.INPUT]}
           priceColor={
             acceptChangesRequired && trade.tradeType === TradeType.EXACT_OUTPUT
               ? theme.primary1
@@ -40,6 +43,7 @@ export default function SwapModalHeader({
         <CurrencySwapPreviewPanel
           field={Field.OUTPUT}
           currencyAmount={trade.outputAmount}
+          usdEquivalency={usdEquivalencies[Field.OUTPUT]}
           priceColor={
             priceImpactSeverity > 2
               ? theme.red1

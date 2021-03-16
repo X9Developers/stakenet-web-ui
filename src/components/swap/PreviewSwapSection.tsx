@@ -1,5 +1,6 @@
 import { Trade } from '@uniswap/sdk'
 import React, { useCallback } from 'react'
+import { Field } from 'state/swap/actions'
 import TransactionConfirmationModal, {
   ConfirmationModalContent,
   TransactionErrorContent
@@ -14,6 +15,7 @@ export default function PreviewSwapSection({
   txHash,
   acceptChangesRequired,
   swapErrorMessage,
+  usdEquivalencies,
 }: {
   trade: Trade | undefined
   attemptingTxn: boolean
@@ -22,6 +24,7 @@ export default function PreviewSwapSection({
   allowedSlippage: number
   swapErrorMessage: string | undefined
   acceptChangesRequired: boolean
+  usdEquivalencies: { [field in Field]: string }
 }) {
 
   const modalHeader = useCallback(() => {
@@ -31,6 +34,7 @@ export default function PreviewSwapSection({
         allowedSlippage={allowedSlippage}
         recipient={recipient}
         acceptChangesRequired={acceptChangesRequired}
+        usdEquivalencies={usdEquivalencies}
       />
     ) : null
   }, [allowedSlippage, recipient, acceptChangesRequired, trade])

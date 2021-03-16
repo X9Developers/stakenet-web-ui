@@ -45,10 +45,12 @@ const AlignedTruncatedText = styled(TruncatedText)<{ input: boolean }>`
 export default function CurrencySwapPreviewPanel({
     field,
     currencyAmount,
+    usdEquivalency,
     priceColor,
 }: {
     field: Field,
     currencyAmount: CurrencyAmount,
+    usdEquivalency: string,
     priceColor: string,
 }) {
   const input = field === Field.INPUT
@@ -67,7 +69,7 @@ export default function CurrencySwapPreviewPanel({
                 {currencyAmount.toSignificant(6)}
             </AlignedTruncatedText>
             <AlignedText fontSize={14} fontWeight={300} input={input}>
-                ${(parseFloat(currencyAmount.toExact()) * 1800).toFixed(2)} USD
+                {usdEquivalency}
             </AlignedText>
         </PaddedAutoColumn>
         <GlowingCurrencyLogo currency={currencyAmount.currency} size="100px" hexRounding="md"/>

@@ -219,7 +219,7 @@ export function useDerivedSwapInfo(): {
 
   const usdtCurrency = useCurrency('0xdAC17F958D2ee523a2206206994597C13D831ec7') ?? undefined
 
-  const usdRelations: { [field in Field]?: CurrencyAmount | undefined} = {
+  const usdRelations: { [field in Field]?: CurrencyAmount | undefined } = {
     [Field.INPUT]: useTradeExactIn(v2Trade?.inputAmount, usdtCurrency)?.outputAmount,
     [Field.OUTPUT]: useTradeExactIn(v2Trade?.outputAmount, usdtCurrency)?.outputAmount,
   }

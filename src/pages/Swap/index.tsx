@@ -41,7 +41,7 @@ import { AlertTriangle } from 'react-feather'
 import SwapModalFooter from 'components/swap/SwapModalFooter'
 import QuestionHelper from 'components/QuestionHelper'
 import TradePrice from 'components/swap/TradePrice'
-import { STAKENET_FLAT_FEE } from 'constants/'
+import { STAKENET_FLAT_FEE } from '../../constants/index'
 
 const BottomSectionButton = styled.div`
   display: flex;
@@ -386,6 +386,7 @@ export default function Swap() {
                 recipient={recipient}
                 allowedSlippage={allowedSlippage}
                 swapErrorMessage={swapErrorMessage}
+                usdEquivalencies={formattedUsdEquivalencies}
               />
             </SwapBottomRevealable>
             <SwapStatsSlidingPreviewSection trade={trade != null}>

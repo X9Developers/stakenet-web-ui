@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useV1Trade } from '../../data/V1'
 import { useActiveWeb3React } from '../../hooks'
 import { useCurrency } from '../../hooks/Tokens'
-import { useTradeExactIn, useTradeExactOut } from '../../hooks/Trades'
+import { getUsdEquivalent, useTradeExactIn, useTradeExactOut } from '../../hooks/Trades'
 import useParsedQueryString from '../../hooks/useParsedQueryString'
 import { isAddress } from '../../utils'
 import { AppDispatch, AppState } from '../index'
@@ -208,11 +208,9 @@ export function useDerivedSwapInfo(): {
     inputError = 'Insufficient ' + amountIn.currency.symbol + ' balance'
   }
 
-  const usdtCurrency = useCurrency('0xdAC17F958D2ee523a2206206994597C13D831ec7') ?? undefined
-
   const usdRelations: { [field in Field]?: CurrencyAmount | undefined } = {
-    [Field.INPUT]: useTradeExactIn(v2Trade?.inputAmount, usdtCurrency)?.outputAmount,
-    [Field.OUTPUT]: useTradeExactIn(v2Trade?.outputAmount, usdtCurrency)?.outputAmount,
+    [Field.INPUT]: getUsdEquivalent(v2Trade?.inputAmount),
+    [Field.OUTPUT]: getUsdEquivalent(v2Trade?.outputAmount),
   }
 
   return {

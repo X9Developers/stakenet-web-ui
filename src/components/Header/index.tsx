@@ -1,4 +1,4 @@
-import { ChainId, TokenAmount } from '@uniswap/sdk'
+import { ChainId, CurrencyAmount, JSBI, TokenAmount } from '@uniswap/sdk'
 import React, { useState } from 'react'
 import { Text } from 'rebass'
 import { NavLink } from 'react-router-dom'
@@ -27,6 +27,8 @@ import { useUserHasAvailableClaim } from '../../state/claim/hooks'
 import Modal from '../Modal'
 import WalletBalanceContent from './UniBalanceContent'
 import usePrevious from '../../hooks/usePrevious'
+import USDTokenBalanceAccumulator from './USDTokenBalanceAccumulator'
+import { USDT } from '../../constants/index'
 
 const HeaderFrame = styled.div`
   display: grid;
@@ -297,6 +299,8 @@ export default function Header() {
 
   const userEthBalance = useETHBalances(account ? [account] : [])?.[account ?? '']
   const [darkMode, toggleDarkMode] = useDarkModeManager()
+  // const tokenBalances = useAllTokenBalances()
+  const [usdWalletBalance, setUsdWalletBalance] = useState<TokenAmount | undefined>(undefined)
 
 
   const availableClaim: boolean = useUserHasAvailableClaim(account)
@@ -305,8 +309,14 @@ export default function Header() {
 
   const [showUniBalanceModal, setShowUniBalanceModal] = useState(false)
 
-  const countUpValue = aggregateBalance?.toFixed(0) ?? '0'
+  const countUpValue = usdWalletBalance?.toFixed(0) ?? '0'
   const countUpValuePrevious = usePrevious(countUpValue) ?? '0'
+  const incrementUSDWalletBalance = (usdIncrementer: CurrencyAmount | undefined): void => {
+    setUsdWalletBalance(new TokenAmount(USDT, JSBI.add(usdWalletBalance?.raw ?? JSBI.BigInt(0), usdIncrementer?.raw ?? JSBI.BigInt(0))))
+  }
+  const decrementUSDWalletBalance = (usdDecrementer: CurrencyAmount | undefined): void => {
+    setUsdWalletBalance(new TokenAmount(USDT, JSBI.subtract(usdWalletBalance?.raw ?? JSBI.BigInt(0), usdDecrementer?.raw ?? JSBI.BigInt(0))))
+  }
 
   return (
     <HeaderFrame>
@@ -358,6 +368,19 @@ export default function Header() {
           {aggregateBalance && (
             <WalletBalanceWrapper onClick={() => setShowUniBalanceModal(true)}>
               <WalletBalanceAmount active={!!account && !availableClaim} style={{ pointerEvents: 'auto' }}>
+                <USDTokenBalanceAccumulator
+                  currencyAmount={ userEthBalance }
+                  incrementUSDWalletBalance={ incrementUSDWalletBalance }
+                  decrementUSDWalletBalance={ decrementUSDWalletBalance }
+                />
+                {/* { Object.values(tokenBalances).map((tokenAmount) =>
+                  <USDTokenBalanceAccumulator
+                    key={ tokenAmount!.currency.name }
+                    currencyAmount={ tokenAmount! }
+                    incrementUSDWalletBalance={ incrementUSDWalletBalance }
+                    decrementUSDWalletBalance={ decrementUSDWalletBalance }
+                  />)
+                } */}
                 {account && (
                   <HideSmall>
                     <TYPE.white

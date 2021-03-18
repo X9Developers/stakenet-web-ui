@@ -1,5 +1,5 @@
-import { ZERO_PERCENT, ONE_HUNDRED_PERCENT } from './../constants/index'
-import { Trade, Percent, currencyEquals } from '@uniswap/sdk'
+import { ZERO_PERCENT, ONE_HUNDRED_PERCENT, USDT } from './../constants/index'
+import { Trade, Percent, currencyEquals, CurrencyAmount, Pair } from '@uniswap/sdk'
 
 // returns whether tradeB is better than tradeA by at least a threshold percentage amount
 export function isTradeBetter(
@@ -38,5 +38,13 @@ export function tradeMeaningfullyDiffers(tradeA: Trade, tradeB: Trade): boolean 
     !tradeA.inputAmount.equalTo(tradeB.inputAmount) ||
     !currencyEquals(tradeA.outputAmount.currency, tradeB.outputAmount.currency) ||
     !tradeA.outputAmount.equalTo(tradeB.outputAmount)
+  )
+}
+
+export function getUsdEquivalentDirty(currencyAmountIn: CurrencyAmount | undefined, allowedPairs: Pair[]): Trade | null {
+  if (currencyAmountIn == null || allowedPairs.length === 0) return null
+  return (
+    Trade.bestTradeExactIn(allowedPairs, currencyAmountIn, USDT, { maxHops: 1, maxNumResults: 1 })[0] ??
+    null
   )
 }

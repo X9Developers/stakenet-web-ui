@@ -3,7 +3,7 @@ import { Currency, CurrencyAmount, Pair, Token, Trade } from '@uniswap/sdk'
 import flatMap from 'lodash.flatmap'
 import { useMemo } from 'react'
 
-import { BASES_TO_CHECK_TRADES_AGAINST, CUSTOM_BASES, BETTER_TRADE_LESS_HOPS_THRESHOLD, USDT } from '../constants'
+import { BASES_TO_CHECK_TRADES_AGAINST, CUSTOM_BASES, BETTER_TRADE_LESS_HOPS_THRESHOLD, USDT, MAX_HOPS } from '../constants'
 import { PairState, usePairs } from '../data/Reserves'
 import { wrappedCurrency } from '../utils/wrappedCurrency'
 
@@ -80,8 +80,6 @@ function useAllCommonPairs(currencyA?: Currency, currencyB?: Currency): Pair[] {
     [allPairs]
   )
 }
-
-const MAX_HOPS = 3
 
 /**
  * Returns the best trade for the exact amount of tokens in to the given token out
@@ -169,6 +167,6 @@ export function useIsTransactionUnsupported(currencyIn?: Currency, currencyOut?:
   return false
 }
 
-export function getUsdEquivalent(inputAmount: CurrencyAmount | undefined): CurrencyAmount | undefined {
+export function useUsdEquivalent(inputAmount: CurrencyAmount | undefined): CurrencyAmount | undefined {
   return useTradeExactIn(inputAmount, USDT)?.outputAmount
 }

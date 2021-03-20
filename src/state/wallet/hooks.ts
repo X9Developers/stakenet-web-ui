@@ -1,5 +1,5 @@
-import { USDT } from './../../constants/index'
-import { Currency, CurrencyAmount, ETHER, JSBI, Token, TokenAmount } from '@uniswap/sdk'
+import { AMPL, MAINNETH_WETH, MKR, USDT, WBTC } from './../../constants/index'
+import { Currency, CurrencyAmount, ETHER, JSBI, Pair, Token, TokenAmount } from '@uniswap/sdk'
 import { useMemo } from 'react'
 import ERC20_INTERFACE from '../../constants/abis/erc20'
 import { useAllTokens } from '../../hooks/Tokens'
@@ -146,4 +146,24 @@ export function useAggregateWalletBalance(): TokenAmount | undefined {
     USDT,
     usdBalance,
   )
+}
+
+// Wallet Page functions
+export function useSyntheticLiquidityPairs(): Pair[] {
+  return [
+    new Pair(new TokenAmount(MAINNETH_WETH, JSBI.BigInt(10000)), new TokenAmount(AMPL, JSBI.BigInt(20000))),
+    new Pair(new TokenAmount(MAINNETH_WETH, JSBI.BigInt(1000)), new TokenAmount(USDT, JSBI.BigInt(18547))),
+    new Pair(new TokenAmount(MAINNETH_WETH, JSBI.BigInt(4000000)), new TokenAmount(WBTC, JSBI.BigInt(500))),
+    new Pair(new TokenAmount(MAINNETH_WETH, JSBI.BigInt(10000)), new TokenAmount(MKR, JSBI.BigInt(20000))),
+  ]
+}
+
+export function useSyntheticWallet(): TokenAmount[] {
+  return [
+    new TokenAmount(MAINNETH_WETH, JSBI.BigInt(10000)),
+    new TokenAmount(USDT, JSBI.BigInt(18547)),
+    new TokenAmount(AMPL, JSBI.BigInt(20000)),
+    new TokenAmount(WBTC, JSBI.BigInt(500)),
+    new TokenAmount(MKR, JSBI.BigInt(20000)),
+  ]
 }

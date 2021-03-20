@@ -32,7 +32,7 @@ export default function GlowingCurrencyLogo({
   hexRounding?: 'none' | 'sm' | 'md' | 'lg'
 }) {
   return (
-    <Wrapper>
+    <Wrapper className="glowing-currency-logo">
         <CurrencyLogoGlow currency={currency} size={size} hexRounding={hexRounding} glow={true}/>
         <CurrencyLogo currency={currency} size={size} hexRounding={hexRounding}/>
     </Wrapper>

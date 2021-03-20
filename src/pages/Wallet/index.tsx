@@ -6,21 +6,18 @@ import { GridPageWrapper } from 'components/Grid'
 import WalletCard from './WalletCard'
 
 export default function Wallet() {
-  // const syntheticPairs = useSyntheticLiquidityPairs()
   const syntheticWalletTokens = useSyntheticWallet()
 
   return (
-    <>
-      <GridPageWrapper gap="lg" justify="center" cardWidth="350">
-        { syntheticWalletTokens.map((tokenAmount, index) => (
-          <WalletCard
-            key={ index }
-            tokenAmount={ tokenAmount }
-            onTradePressed={ (currency) => console.log('Trade Currency: ', currency) }
-            onPoolPressed={ (currency) => console.log('Pool Currency: ', currency) }
-          />
-        ))}
-      </GridPageWrapper>
-    </>
+    <GridPageWrapper gap="36px" justify="center" cardWidth="360">
+      { syntheticWalletTokens.map((currencyAmount, index) => (
+        <WalletCard
+          key={ index }
+          currencyAmount={ currencyAmount }
+          onTradePressed={ (currency) => console.log('Trade Currency: ', currency) }
+          onPoolPressed={ (currency) => console.log('Pool Currency: ', currency) }
+        />
+      ))}
+    </GridPageWrapper>
   )
 }

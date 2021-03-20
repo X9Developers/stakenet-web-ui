@@ -158,12 +158,12 @@ export function useSyntheticLiquidityPairs(): Pair[] {
   ]
 }
 
-export function useSyntheticWallet(): TokenAmount[] {
+export function useSyntheticWallet(): CurrencyAmount[] {
   return [
-    new TokenAmount(MAINNETH_WETH, JSBI.BigInt(10000)),
-    new TokenAmount(USDT, JSBI.BigInt(18547)),
-    new TokenAmount(AMPL, JSBI.BigInt(20000)),
-    new TokenAmount(WBTC, JSBI.BigInt(500)),
-    new TokenAmount(MKR, JSBI.BigInt(20000)),
+    CurrencyAmount.ether(JSBI.BigInt(6300000000000000000)),
+    new TokenAmount(USDT, JSBI.BigInt(1850000000)),
+    new TokenAmount(AMPL, JSBI.BigInt(20000000000000)),
+    new TokenAmount(WBTC, JSBI.BigInt(4675000)),
+    new TokenAmount(MKR, JSBI.BigInt(23655400000000000000)),
   ]
 }

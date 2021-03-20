@@ -28,22 +28,14 @@ export default function USDTokenBalanceAccumulator({ currencyAmount, incrementUS
       setPrevUsdEquivalent(usdEquivalent)
       incrementUSDWalletBalance(usdEquivalent)
     }
-    const updaterInterval = setInterval(() => {
-      if (prevUsdEquivalent != null && usdEquivalent != null) {
-        if (usdEquivalent.divide(prevUsdEquivalent).greaterThan(ONE_HUNDRED_TWO_PERCENT)) {
-          incrementUSDWalletBalance(usdEquivalent.subtract(prevUsdEquivalent))
-        } else if (prevUsdEquivalent.divide(usdEquivalent).greaterThan(ONE_HUNDRED_TWO_PERCENT)) {
-          decrementUSDWalletBalance(prevUsdEquivalent.subtract(usdEquivalent))
-        }
-        setPrevUsdEquivalent(usdEquivalent)
+    if (prevUsdEquivalent != null && usdEquivalent != null) {
+      if (usdEquivalent.divide(prevUsdEquivalent).greaterThan(ONE_HUNDRED_TWO_PERCENT)) {
+        incrementUSDWalletBalance(usdEquivalent.subtract(prevUsdEquivalent))
+      } else if (prevUsdEquivalent.divide(usdEquivalent).greaterThan(ONE_HUNDRED_TWO_PERCENT)) {
+        decrementUSDWalletBalance(prevUsdEquivalent.subtract(usdEquivalent))
       }
-    }, 3000)
-    return () => {
-      clearInterval(updaterInterval)
-      if (usdEquivalent != null) {
-        decrementUSDWalletBalance(usdEquivalent)
-      }
+      setPrevUsdEquivalent(usdEquivalent)
     }
-  }, [usdEquivalent, currencyAmount?.currency.name])
+  }, [usdEquivalent])
   return <InvisDiv/>
 }

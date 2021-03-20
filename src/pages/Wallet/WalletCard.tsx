@@ -1,5 +1,5 @@
 import React from 'react'
-import { Currency, CurrencyAmount } from '@uniswap/sdk'
+import { CurrencyAmount } from '@uniswap/sdk'
 import { AutoRow } from 'components/Row'
 import { AutoColumn } from 'components/Column'
 import { Text } from 'rebass'
@@ -12,20 +12,11 @@ import { GradientDividerRow } from 'components/swap/styleds'
 import { ButtonPrimary } from 'components/Button'
 import { currencyId } from 'utils/currencyId'
 
-
-
-
-interface WalletCardProps {
-    currencyAmount: CurrencyAmount,
-    onTradePressed: (currency: Currency) => void,
-    onPoolPressed: (currency: Currency) => void,
-}
-
 export default function WalletCard({
     currencyAmount,
-    onTradePressed,
-    onPoolPressed,
-}: WalletCardProps) {
+}: {
+    currencyAmount: CurrencyAmount,
+}) {
 
   const usdEquivalency = useUsdEquivalent(currencyAmount)
   return (

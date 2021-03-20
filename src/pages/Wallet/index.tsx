@@ -14,8 +14,6 @@ export default function Wallet() {
         <WalletCard
           key={ index }
           currencyAmount={ currencyAmount }
-          onTradePressed={ (currency) => console.log('Trade Currency: ', currency) }
-          onPoolPressed={ (currency) => console.log('Pool Currency: ', currency) }
         />
       ))}
     </GridPageWrapper>

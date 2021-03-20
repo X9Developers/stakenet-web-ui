@@ -162,11 +162,11 @@ export const SwapInfoAutoColumn = styled(AutoColumn)<{visible: boolean}>`
   opacity: ${({ visible }) => visible ? 1 : 0};
 `
 
-export const GradientDividerRow = styled.div`
-  width: 200%;
+export const GradientDividerRow = styled.div<{ width?: string }>`
+  width: ${({ width }) => width != null ? width : '200%'};
   position: relative;
-  left: -50%;
-  height: 2px;
+  left: ${({ width }) => width != null ? `calc((${width} - 100%) * 0.5)` : '-50%'};
+  height: 1.5px;
   margin: auto;
   background: ${({ theme }) => `linear-gradient(to right, ${theme.text3}00, ${theme.text3}, ${theme.text3}00)`};
 `

@@ -302,7 +302,7 @@ export default function Header() {
 
   const [showUniBalanceModal, setShowUniBalanceModal] = useState(false)
 
-  const countUpValue = usdWalletBalance?.toFixed(0) ?? '0'
+  const countUpValue = usdWalletBalance?.toFixed(2) ?? '0'
   const countUpValuePrevious = usePrevious(countUpValue) ?? '0'
   const incrementUSDWalletBalance = (increment: CurrencyAmount | undefined): void => {
     setUsdWalletBalance(new TokenAmount(USDT, JSBI.add(usdWalletBalance?.raw ?? JSBI.BigInt(0), increment?.raw ?? JSBI.BigInt(0))))
@@ -374,6 +374,7 @@ export default function Header() {
                     decrementUSDWalletBalance={ decrementUSDWalletBalance }
                   />)
                 } */}
+                $
                 {account && (
                   <HideSmall>
                     <TYPE.white

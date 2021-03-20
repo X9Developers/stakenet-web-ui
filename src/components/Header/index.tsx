@@ -1,6 +1,5 @@
 import { ChainId, CurrencyAmount, JSBI, TokenAmount } from '@uniswap/sdk'
 import React, { useState } from 'react'
-import { Text } from 'rebass'
 import { NavLink } from 'react-router-dom'
 import { darken } from 'polished'
 import { useTranslation } from 'react-i18next'
@@ -167,12 +166,6 @@ const NetworkCard = styled(YellowCard)`
     overflow: hidden;
     text-overflow: ellipsis;
     flex-shrink: 1;
-  `};
-`
-
-const BalanceText = styled(Text)`
-  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
-    display: none;
   `};
 `
 
@@ -405,11 +398,6 @@ export default function Header() {
             </WalletBalanceWrapper>
           )}
           <AccountElement active={!!account} style={{ pointerEvents: 'auto' }}>
-            {account && userEthBalance ? (
-              <BalanceText style={{ flexShrink: 0 }} pl="0.75rem" pr="0.5rem" fontWeight={500}>
-                {userEthBalance?.toSignificant(4)} ETH
-              </BalanceText>
-            ) : null}
             <Web3Status />
           </AccountElement>
         </HeaderElement>

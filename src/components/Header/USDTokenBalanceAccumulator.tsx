@@ -36,6 +36,7 @@ export default function USDTokenBalanceAccumulator({ currencyAmount, incrementUS
       }
       setPrevUsdEquivalent(usdEquivalent)
     }
+  // eslint-disable-next-line
   }, [usdEquivalent])
   return <InvisDiv/>
 }

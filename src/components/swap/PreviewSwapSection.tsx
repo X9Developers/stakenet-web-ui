@@ -37,7 +37,7 @@ export default function PreviewSwapSection({
         usdEquivalencies={usdEquivalencies}
       />
     ) : null
-  }, [allowedSlippage, recipient, acceptChangesRequired, trade])
+  }, [allowedSlippage, recipient, acceptChangesRequired, trade, usdEquivalencies])
 
   // text to show while loading
   const pendingText = `Swapping ${trade?.inputAmount?.toSignificant(6)} ${

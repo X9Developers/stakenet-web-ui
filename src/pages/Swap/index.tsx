@@ -42,6 +42,7 @@ import SwapModalFooter from 'components/swap/SwapModalFooter'
 import QuestionHelper from 'components/QuestionHelper'
 import TradePrice from 'components/swap/TradePrice'
 import { STAKENET_FLAT_FEE } from '../../constants/index'
+import { getUsdValue } from 'utils'
 
 const BottomSectionButton = styled.div`
   display: flex;
@@ -188,8 +189,8 @@ export default function Swap() {
   }
 
   const formattedUsdEquivalencies = {
-    [Field.INPUT]: usdRelations.INPUT != null ? `$${usdRelations.INPUT.toFixed(2)} USD` : '-',
-    [Field.OUTPUT]: usdRelations.OUTPUT != null ? `$${usdRelations.OUTPUT.toFixed(2)} USD` : '-',
+    [Field.INPUT]: getUsdValue(usdRelations.INPUT),
+    [Field.OUTPUT]: getUsdValue(usdRelations.OUTPUT),
   }
 
   const route = trade?.route

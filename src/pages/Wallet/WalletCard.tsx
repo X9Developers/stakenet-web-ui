@@ -1,47 +1,74 @@
 import React from 'react'
-import { Currency, TokenAmount } from '@uniswap/sdk'
+import { Currency, CurrencyAmount } from '@uniswap/sdk'
 import { AutoRow } from 'components/Row'
 import { AutoColumn } from 'components/Column'
 import { Text } from 'rebass'
-import { TruncatedText, WalletCardWrapper } from './styleds'
+import { Link } from 'react-router-dom'
+import { TruncatedText, WalletCardBottomSection, WalletCardWrapper } from './styleds'
 import GlowingCurrencyLogo from 'components/CurrencyLogo/GlowingCurrencyLogo'
 import { useUsdEquivalent } from 'hooks/Trades'
+import { getUsdValue } from 'utils'
+import { GradientDividerRow } from 'components/swap/styleds'
+import { ButtonPrimary } from 'components/Button'
+import { currencyId } from 'utils/currencyId'
 
 
 
 
 interface WalletCardProps {
-    tokenAmount: TokenAmount,
+    currencyAmount: CurrencyAmount,
     onTradePressed: (currency: Currency) => void,
     onPoolPressed: (currency: Currency) => void,
 }
 
 export default function WalletCard({
-    tokenAmount,
+    currencyAmount,
     onTradePressed,
     onPoolPressed,
 }: WalletCardProps) {
 
-  const usdEquivalency = useUsdEquivalent(tokenAmount)
+  const usdEquivalency = useUsdEquivalent(currencyAmount)
   return (
-    <WalletCardWrapper gap="lg">
-        <AutoRow>
+    <WalletCardWrapper className="wallet-card" gap="lg">
+        <AutoRow className="wallet-card-top-row" justify='space-between'>
             <AutoColumn gap="8px">
                 <Text fontSize={18} fontWeight={500}>
-                    {tokenAmount.currency.symbol}
+                    {currencyAmount.currency.symbol}
                 </Text>
-                <TruncatedText fontSize={24} fontWeight={500}>
-                    {tokenAmount.toSignificant(6)}
+                <TruncatedText style={{ flexShrink: 0 }} fontSize={24} fontWeight={500}>
+                    {currencyAmount.toSignificant(6)}
                 </TruncatedText>
-                <Text fontSize={14} fontWeight={300}>
-                    {usdEquivalency}
+                <Text fontSize={16} fontWeight={300}>
+                    { getUsdValue(usdEquivalency) }
                 </Text>
             </AutoColumn>
-            <GlowingCurrencyLogo currency={tokenAmount.currency} size="100px" hexRounding="md"/>
+            <GlowingCurrencyLogo currency={currencyAmount.currency} size="140px" hexRounding="md"/>
         </AutoRow>
-        <AutoRow>
+        <WalletCardBottomSection className="wallet-card-bottom-section" gap="0px">
+            <GradientDividerRow width="100%" style={{ position: 'absolute', top: 0 }}/>
+            <AutoRow justify='space-between' gap='md'>
+                <ButtonPrimary
+                    padding="8px"
+                    borderRadius="8px"
+                    as={Link}
+                    to={`/swap/${currencyId(currencyAmount.currency)}`}
+                    width="48%"
+                >
+                    Swap
+                </ButtonPrimary>
 
-        </AutoRow>
+                <ButtonPrimary
+                    padding="8px"
+                    borderRadius="8px"
+                    as={Link}
+                    to={`/pool/${currencyId(currencyAmount.currency)}`}
+                    width="48%"
+                >
+                    Pool
+                </ButtonPrimary>
+            </AutoRow>
+        </WalletCardBottomSection>
+
     </WalletCardWrapper>
   )
 }

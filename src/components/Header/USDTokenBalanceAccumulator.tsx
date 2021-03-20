@@ -1,4 +1,5 @@
 import { CurrencyAmount } from '@uniswap/sdk'
+import { ONE_HUNDRED_TWO_PERCENT } from '../../constants/index'
 import { useUsdEquivalent } from 'hooks/Trades'
 import React, { useEffect } from 'react'
 import styled from 'styled-components'
@@ -15,18 +16,30 @@ const InvisDiv = styled.div`
 
 interface USDTokenBalanceAccumulatorProps {
   currencyAmount: CurrencyAmount | undefined
-  incrementUSDWalletBalance: (usdIncrementor: CurrencyAmount | undefined) => void
-  decrementUSDWalletBalance: (usdDecrementor: CurrencyAmount | undefined) => void
+  adjustUSDWalletBalance: (adjustment: CurrencyAmount | undefined) => void
+  subtractUSDWalletBalance: (amount: CurrencyAmount | undefined) => void
 }
 
-export default function USDTokenBalanceAccumulator({ currencyAmount, incrementUSDWalletBalance, decrementUSDWalletBalance }: USDTokenBalanceAccumulatorProps) {
+export default function USDTokenBalanceAccumulator({ currencyAmount, adjustUSDWalletBalance, subtractUSDWalletBalance }: USDTokenBalanceAccumulatorProps) {
   const usdEquivalent = useUsdEquivalent(currencyAmount)
+  const [prevUsdEquivalent, setPrevUsdEquivalent] = React.useState<CurrencyAmount | undefined>(undefined)
   useEffect(() => {
+    if (prevUsdEquivalent == null && usdEquivalent != null) {
+      setPrevUsdEquivalent(usdEquivalent)
+      adjustUSDWalletBalance(usdEquivalent)
+    }
     const updaterInterval = setInterval(() => {
-      console.log(currencyAmount?.currency.name, currencyAmount, usdEquivalent)
-      incrementUSDWalletBalance(usdEquivalent)
+      if (prevUsdEquivalent != null && usdEquivalent != null && (usdEquivalent.divide(prevUsdEquivalent).greaterThan(ONE_HUNDRED_TWO_PERCENT) || prevUsdEquivalent.divide(usdEquivalent).greaterThan(ONE_HUNDRED_TWO_PERCENT))) {
+        setPrevUsdEquivalent(usdEquivalent)
+        adjustUSDWalletBalance(usdEquivalent.subtract(prevUsdEquivalent))
+      }
     }, 3000)
-    return () => clearInterval(updaterInterval)
-  }, [usdEquivalent, currencyAmount?.currency.name, currencyAmount?.raw])
+    return () => {
+      clearInterval(updaterInterval)
+      if (usdEquivalent != null) {
+        subtractUSDWalletBalance(usdEquivalent)
+      }
+    }
+  }, [usdEquivalent, currencyAmount?.currency.name])
   return <InvisDiv/>
 }

@@ -16,28 +16,32 @@ const InvisDiv = styled.div`
 
 interface USDTokenBalanceAccumulatorProps {
   currencyAmount: CurrencyAmount | undefined
-  adjustUSDWalletBalance: (adjustment: CurrencyAmount | undefined) => void
-  subtractUSDWalletBalance: (amount: CurrencyAmount | undefined) => void
+  incrementUSDWalletBalance: (adjustment: CurrencyAmount | undefined) => void
+  decrementUSDWalletBalance: (amount: CurrencyAmount | undefined) => void
 }
 
-export default function USDTokenBalanceAccumulator({ currencyAmount, adjustUSDWalletBalance, subtractUSDWalletBalance }: USDTokenBalanceAccumulatorProps) {
+export default function USDTokenBalanceAccumulator({ currencyAmount, incrementUSDWalletBalance, decrementUSDWalletBalance }: USDTokenBalanceAccumulatorProps) {
   const usdEquivalent = useUsdEquivalent(currencyAmount)
   const [prevUsdEquivalent, setPrevUsdEquivalent] = React.useState<CurrencyAmount | undefined>(undefined)
   useEffect(() => {
     if (prevUsdEquivalent == null && usdEquivalent != null) {
       setPrevUsdEquivalent(usdEquivalent)
-      adjustUSDWalletBalance(usdEquivalent)
+      incrementUSDWalletBalance(usdEquivalent)
     }
     const updaterInterval = setInterval(() => {
-      if (prevUsdEquivalent != null && usdEquivalent != null && (usdEquivalent.divide(prevUsdEquivalent).greaterThan(ONE_HUNDRED_TWO_PERCENT) || prevUsdEquivalent.divide(usdEquivalent).greaterThan(ONE_HUNDRED_TWO_PERCENT))) {
+      if (prevUsdEquivalent != null && usdEquivalent != null) {
+        if (usdEquivalent.divide(prevUsdEquivalent).greaterThan(ONE_HUNDRED_TWO_PERCENT)) {
+          incrementUSDWalletBalance(usdEquivalent.subtract(prevUsdEquivalent))
+        } else if (prevUsdEquivalent.divide(usdEquivalent).greaterThan(ONE_HUNDRED_TWO_PERCENT)) {
+          decrementUSDWalletBalance(prevUsdEquivalent.subtract(usdEquivalent))
+        }
         setPrevUsdEquivalent(usdEquivalent)
-        adjustUSDWalletBalance(usdEquivalent.subtract(prevUsdEquivalent))
       }
     }, 3000)
     return () => {
       clearInterval(updaterInterval)
       if (usdEquivalent != null) {
-        subtractUSDWalletBalance(usdEquivalent)
+        decrementUSDWalletBalance(usdEquivalent)
       }
     }
   }, [usdEquivalent, currencyAmount?.currency.name])

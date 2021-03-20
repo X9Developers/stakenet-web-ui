@@ -1,6 +1,5 @@
-import { ChainId, TokenAmount } from '@uniswap/sdk'
+import { ChainId, CurrencyAmount, JSBI, TokenAmount } from '@uniswap/sdk'
 import React, { useState } from 'react'
-import { Text } from 'rebass'
 import { NavLink } from 'react-router-dom'
 import { darken } from 'polished'
 import { useTranslation } from 'react-i18next'
@@ -11,7 +10,7 @@ import Logo from '../../assets/svg/logo.svg'
 import LogoDark from '../../assets/svg/logo_white.svg'
 import { useActiveWeb3React } from '../../hooks'
 import { useDarkModeManager } from '../../state/user/hooks'
-import { useETHBalances, useAggregateUniBalance } from '../../state/wallet/hooks'
+import { useETHBalances, useAggregateWalletBalance } from '../../state/wallet/hooks'
 import { CardNoise } from '../earn/styled'
 import { CountUp } from 'use-count-up'
 import { TYPE, ExternalLink } from '../../theme'
@@ -23,13 +22,12 @@ import Menu from '../Menu'
 import Row, { RowFixed } from '../Row'
 import Web3Status from '../Web3Status'
 import ClaimModal from '../claim/ClaimModal'
-import { useToggleSelfClaimModal, useShowClaimPopup } from '../../state/application/hooks'
 import { useUserHasAvailableClaim } from '../../state/claim/hooks'
-import { useUserHasSubmittedClaim } from '../../state/transactions/hooks'
-import { Dots } from '../swap/styleds'
 import Modal from '../Modal'
-import UniBalanceContent from './UniBalanceContent'
+import WalletBalanceContent from './UniBalanceContent'
 import usePrevious from '../../hooks/usePrevious'
+import USDTokenBalanceAccumulator from './USDTokenBalanceAccumulator'
+import { USDT } from '../../constants/index'
 
 const HeaderFrame = styled.div`
   display: grid;
@@ -129,7 +127,7 @@ const AccountElement = styled.div<{ active: boolean }>`
   }
 `
 
-const UNIAmount = styled(AccountElement)`
+const WalletBalanceAmount = styled(AccountElement)`
   color: white;
   padding: 4px 8px;
   height: 36px;
@@ -138,7 +136,7 @@ const UNIAmount = styled(AccountElement)`
   background: ${({ theme }) => `radial-gradient(174.47% 188.91% at 1.84% 0%, ${theme.primaryText1} 0%, ${theme.bg2} 100%), #edeef2`};
 `
 
-const UNIWrapper = styled.span`
+const WalletBalanceWrapper = styled.span`
   width: fit-content;
   position: relative;
   cursor: pointer;
@@ -168,12 +166,6 @@ const NetworkCard = styled(YellowCard)`
     overflow: hidden;
     text-overflow: ellipsis;
     flex-shrink: 1;
-  `};
-`
-
-const BalanceText = styled(Text)`
-  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
-    display: none;
   `};
 `
 
@@ -299,28 +291,31 @@ export default function Header() {
   const { t } = useTranslation()
 
   const userEthBalance = useETHBalances(account ? [account] : [])?.[account ?? '']
-  // const [isDark] = useDarkModeManager()
   const [darkMode, toggleDarkMode] = useDarkModeManager()
+  // const tokenBalances = useAllTokenBalances()
+  const [usdWalletBalance, setUsdWalletBalance] = useState<TokenAmount | undefined>(undefined)
 
-  const toggleClaimModal = useToggleSelfClaimModal()
 
   const availableClaim: boolean = useUserHasAvailableClaim(account)
 
-  const { claimTxn } = useUserHasSubmittedClaim(account ?? undefined)
-
-  const aggregateBalance: TokenAmount | undefined = useAggregateUniBalance()
+  const aggregateBalance: TokenAmount | undefined = useAggregateWalletBalance()
 
   const [showUniBalanceModal, setShowUniBalanceModal] = useState(false)
-  const showClaimPopup = useShowClaimPopup()
 
-  const countUpValue = aggregateBalance?.toFixed(0) ?? '0'
+  const countUpValue = usdWalletBalance?.toFixed(2) ?? '0'
   const countUpValuePrevious = usePrevious(countUpValue) ?? '0'
+  const incrementUSDWalletBalance = (increment: CurrencyAmount | undefined): void => {
+    setUsdWalletBalance(new TokenAmount(USDT, JSBI.add(usdWalletBalance?.raw ?? JSBI.BigInt(0), increment?.raw ?? JSBI.BigInt(0))))
+  }
+  const decrementUSDWalletBalance = (decrement: CurrencyAmount | undefined): void => {
+    setUsdWalletBalance(new TokenAmount(USDT, JSBI.subtract(usdWalletBalance?.raw ?? JSBI.BigInt(0), decrement?.raw ?? JSBI.BigInt(0))))
+  }
 
   return (
     <HeaderFrame>
       <ClaimModal />
       <Modal isOpen={showUniBalanceModal} onDismiss={() => setShowUniBalanceModal(false)}>
-        <UniBalanceContent setShowUniBalanceModal={setShowUniBalanceModal} />
+        <WalletBalanceContent setShowUniBalanceModal={setShowUniBalanceModal} />
       </Modal>
       <HeaderRow>
         <Title href=".">
@@ -363,19 +358,23 @@ export default function Header() {
               <NetworkCard title={NETWORK_LABELS[chainId]}>{NETWORK_LABELS[chainId]}</NetworkCard>
             )}
           </HideSmall>
-          {availableClaim && !showClaimPopup && (
-            <UNIWrapper onClick={toggleClaimModal}>
-              <UNIAmount active={!!account && !availableClaim} style={{ pointerEvents: 'auto' }}>
-                <TYPE.white padding="0 2px">
-                  {claimTxn && !claimTxn?.receipt ? <Dots>Claiming UNI</Dots> : 'Claim UNI'}
-                </TYPE.white>
-              </UNIAmount>
-              <CardNoise />
-            </UNIWrapper>
-          )}
-          {!availableClaim && aggregateBalance && (
-            <UNIWrapper onClick={() => setShowUniBalanceModal(true)}>
-              <UNIAmount active={!!account && !availableClaim} style={{ pointerEvents: 'auto' }}>
+          {aggregateBalance && (
+            <WalletBalanceWrapper onClick={() => setShowUniBalanceModal(true)}>
+              <WalletBalanceAmount active={!!account && !availableClaim} style={{ pointerEvents: 'auto' }}>
+                <USDTokenBalanceAccumulator
+                  currencyAmount={ userEthBalance }
+                  incrementUSDWalletBalance={ incrementUSDWalletBalance }
+                  decrementUSDWalletBalance={ decrementUSDWalletBalance }
+                />
+                {/* { Object.values(tokenBalances).map((tokenAmount) =>
+                  <USDTokenBalanceAccumulator
+                    key={ tokenAmount!.currency.name }
+                    currencyAmount={ tokenAmount! }
+                    incrementUSDWalletBalance={ incrementUSDWalletBalance }
+                    decrementUSDWalletBalance={ decrementUSDWalletBalance }
+                  />)
+                } */}
+                $
                 {account && (
                   <HideSmall>
                     <TYPE.white
@@ -394,43 +393,12 @@ export default function Header() {
                     </TYPE.white>
                   </HideSmall>
                 )}
-                XSN
-              </UNIAmount>
+                USD
+              </WalletBalanceAmount>
               <CardNoise />
-            </UNIWrapper>
-          )}
-          {!availableClaim && aggregateBalance && (
-            <UNIWrapper onClick={() => setShowUniBalanceModal(true)}>
-              <UNIAmount active={!!account && !availableClaim} style={{ pointerEvents: 'auto' }}>
-                {account && (
-                  <HideSmall>
-                    <TYPE.white
-                      style={{
-                        paddingRight: '.4rem'
-                      }}
-                    >
-                      <CountUp
-                        key={countUpValue}
-                        isCounting
-                        start={parseFloat(countUpValuePrevious)}
-                        end={parseFloat(countUpValue)}
-                        thousandsSeparator={','}
-                        duration={1}
-                      />
-                    </TYPE.white>
-                  </HideSmall>
-                )}
-                MN
-              </UNIAmount>
-              <CardNoise />
-            </UNIWrapper>
+            </WalletBalanceWrapper>
           )}
           <AccountElement active={!!account} style={{ pointerEvents: 'auto' }}>
-            {account && userEthBalance ? (
-              <BalanceText style={{ flexShrink: 0 }} pl="0.75rem" pr="0.5rem" fontWeight={500}>
-                {userEthBalance?.toSignificant(4)} ETH
-              </BalanceText>
-            ) : null}
             <Web3Status />
           </AccountElement>
         </HeaderElement>

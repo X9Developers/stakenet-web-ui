@@ -204,6 +204,7 @@ export const BETTER_TRADE_LESS_HOPS_THRESHOLD = new Percent(JSBI.BigInt(50), JSB
 
 export const ZERO_PERCENT = new Percent('0')
 export const ONE_HUNDRED_PERCENT = new Percent('1')
+export const ONE_HUNDRED_TWO_PERCENT = new Percent('102', '100')
 
 // SDN OFAC addresses
 export const BLOCKED_ADDRESSES: string[] = [
@@ -216,3 +217,4 @@ export const BLOCKED_ADDRESSES: string[] = [
 
 // Stakenet flat fee percent
 export const STAKENET_FLAT_FEE = new Percent('3', '1000')
+export const MAX_HOPS = 3

@@ -170,3 +170,12 @@ export function useIsTransactionUnsupported(currencyIn?: Currency, currencyOut?:
 export function useUsdEquivalent(inputAmount: CurrencyAmount | undefined): CurrencyAmount | undefined {
   return useTradeExactIn(inputAmount, USDT)?.outputAmount
 }
+
+export function usePairUsdEquivalent(pair: Pair): CurrencyAmount | undefined {
+  const reserve0usd = useTradeExactIn(pair.reserve0, USDT)?.outputAmount
+  const reserve1usd = useTradeExactIn(pair.reserve1, USDT)?.outputAmount
+  if (reserve0usd != null && reserve1usd != null) {
+    return reserve0usd.add(reserve1usd)
+  }
+  return
+}

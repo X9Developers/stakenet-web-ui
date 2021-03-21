@@ -1,70 +1,58 @@
 import { Text } from 'rebass'
 import styled from 'styled-components'
 import { AutoColumn } from 'components/Column'
-import OnRampBackgroundImage from '../../assets/images/on-ramp-background.png'
+import PairInfoBackgroundImage from '../../assets/images/liquidity-provider-info-background.png'
 import { AutoRow } from 'components/Row'
+import { BaseWalletCardWrapper } from 'components/Grid'
 
-
-export const BaseWalletCardWrapper = styled(AutoColumn)`
-  position: relative;
-  background: ${({ theme }) => `linear-gradient(to right, ${theme.bg4}, ${theme.bg5});`};
-  box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.01), 0px 4px 8px rgba(0, 0, 0, 0.04), 0px 16px 24px rgba(0, 0, 0, 0.04),
-  0px 24px 32px rgba(0, 0, 0, 0.01);
-  border-radius: 5px;
-  padding: 18px;
-  padding-top: 28px;
-  padding-bottom: 28px;
-  width: 100%;
-  height: 326px;
-
-  ${({ theme }) => theme.mediaWidth.upToSmall`
-    height: 220px;
-  `};
-`
-
-export const OnRampWalletCardWrapper = styled(BaseWalletCardWrapper)`
+export const LiquidityInfoCardWrapper = styled(BaseWalletCardWrapper)`
   overflow: hidden;
   padding-left: 64px;
   padding-right: 64px;
 
-  &.on-ramp-wallet-card > .on-ramp-text {
-    transition: all 300ms;
-    height: 250px;
+  &.pair-info-card {
+    .pair-info-text {
+      transition: all 300ms;
+      height: 250px;
+    }
+    .pair-info-revealable-button-row {
+      transition: all 300ms;
+      opacity: 0;
+      bottom: -30px;
+      pointer-events: none;
+    }
   }
-  &.on-ramp-wallet-card:hover > .on-ramp-text {
-    height: 190px;
-  }
-  &.on-ramp-wallet-card > .on-ramp-revealable-button {
-    transition: all 300ms;
-    opacity: 0;
-    bottom: -30px;
-    pointer-events: none;
-  }
-  &.on-ramp-wallet-card:hover > .on-ramp-revealable-button {
-    opacity: 1;
-    bottom: 20px;
-    pointer-events: auto;
-  }
-  &.on-ramp-wallet-card:hover > .on-ramp-img-background {
-    transform: scale(1);
-  }
-
-  ${({ theme }) => theme.mediaWidth.upToSmall`
-    height: 240px;
-    &.on-ramp-wallet-card > .on-ramp-img-background {
+  &.pair-info-card:hover {
+    .pair-info-text {
+      height: 200px;
+    }
+    .pair-info-revealable-button-row {
+      opacity: 1;
+      bottom: 20px;
+      pointer-events: auto;
+    }
+    .pair-info-img-background {
       transform: scale(1);
     }
-    &.on-ramp-wallet-card > .on-ramp-text {
+  }
+
+  
+  ${({ theme }) => theme.mediaWidth.upToSmall`
+    height: 240px;
+    &.on-ramp-pair-card > .on-ramp-img-background {
+      transform: scale(1);
+    }
+    &.on-ramp-pair-card > .on-ramp-text {
       transform: none 300ms;
       height: 120px;
     }
-    &.on-ramp-wallet-card > .on-ramp-revealable-button {
+    &.on-ramp-pair-card > .on-ramp-revealable-button {
       transition: none 300ms;
       opacity: 1;
       bottom: 0px;
       pointer-events: auto;
     }
-    &.on-ramp-wallet-card:hover > .on-ramp-revealable-button {
+    &.on-ramp-pair-card:hover > .on-ramp-revealable-button {
       opacity: 1;
       bottom: 0px;
       pointer-events: auto;
@@ -72,8 +60,8 @@ export const OnRampWalletCardWrapper = styled(BaseWalletCardWrapper)`
   `}
 `
 
-export const OnRampCardBackground = styled.image`
-  background-image: url(${OnRampBackgroundImage});
+export const LiquidityInfoCardBackground = styled.image`
+  background-image: url(${PairInfoBackgroundImage});
   opacity: 0.15;
   position: absolute;
   top: 0;
@@ -90,40 +78,84 @@ export const OnRampCardBackground = styled.image`
   pointer-events: none;
 `
 
-export const OnRampRevealableWrapper = styled(AutoRow)`
+export const LiquidityInfoRevealableWrapper = styled(AutoRow)`
   position: absolute;
   bottom: 0px;
   left: 0px;
   right: 0px;
   height: 64px;
+  padding-left: 36px;
+  padding-right: 36px;
 `
 
-export const WalletCardWrapper = styled(BaseWalletCardWrapper)`
 
-  &.wallet-card > .wallet-card-top-row > .glowing-currency-logo {
-    transition: all 300ms;
-    transform-origin: center right;
-  }
-  &.wallet-card:hover > .wallet-card-top-row > .glowing-currency-logo {
-    transform: scale(0.6);
+
+export const PairCardWrapper = styled(BaseWalletCardWrapper)`
+  padding-left: 36px;
+  padding-right: 36px;
+  height: 325px;
+  transition: all 300ms;
+
+  &.pair-card {
+    .pair-card-currency-rows-wrapper {
+      height: 270px;
+      transition: height 300ms;
+
+      .pair-card-currency-row-1 {
+        transition: all 300ms;
+        height: 120px;
+        transform-origin: top left;
+        .glowing-currency-logo {
+          transition: all 300ms;
+          transform-origin: center right;
+        }
+      }
+
+      .pair-card-currency-row-2 {
+        transition: all 300ms;
+        height: 120px;
+        transform-origin: top right;
+        .glowing-currency-logo {
+          transition: all 300ms;
+          transform-origin: center left;
+        }
+      }
+    }
+
+    .pair-usd-value {
+      bottom: 16px;
+    }
   }
 
-  &.wallet-card > .wallet-card-top-row > .wallet-card-text-info {
-    transition: all 300ms;
-    transform-origin: center left;
-  }
-  &.wallet-card:hover > .wallet-card-top-row > .wallet-card-text-info {
-    transform: scale(0.8);
+
+  &.pair-card:hover {
+    .pair-card-currency-rows-wrapper {
+      height: 220px;
+
+      .pair-card-currency-row-1 {
+        transform: translateX(-40px) translateY(-15px);
+        height: 64px;
+        .glowing-currency-logo {
+          transform: scale(0.7);
+        }
+      }
+
+      .pair-card-currency-row-2 {
+        transform: translateX(40px) translateY(-30px);
+        height: 84px;
+        .glowing-currency-logo {
+          transform: scale(0.7);
+        }
+      }
+    }
+
+    .pair-usd-value {
+      bottom: 76px;
+    }
   }
 
-  &.wallet-card > .wallet-card-top-row {
-    transition: all 300ms;
-    height: 270px;
-  }
-  &.wallet-card:hover > .wallet-card-top-row {
-    height: 150px;
-  }
-  &.wallet-card:hover > .wallet-card-bottom-section {
+
+  &.pair-card:hover > .pair-card-bottom-section {
     opacity: 1;
     bottom: 0;
     pointer-events: auto;
@@ -131,29 +163,29 @@ export const WalletCardWrapper = styled(BaseWalletCardWrapper)`
 
   ${({ theme }) => theme.mediaWidth.upToSmall`
     padding-top: 0px;
-    &.wallet-card > .wallet-card-top-row > .glowing-currency-logo {
+    &.pair-card > .pair-card-currency-row > .glowing-currency-logo {
       transition: none 300ms;
       transform: scale(0.6);
     }
 
-    &.wallet-card > .wallet-card-top-row > .wallet-card-text-info {
+    &.pair-card > .pair-card-currency-row > .pair-card-text-info {
       transition: none 300ms;
     }
-    &.wallet-card:hover > .wallet-card-top-row > .wallet-card-text-info {
+    &.pair-card:hover > .pair-card-currency-row > .pair-card-text-info {
       transform: scale(1);
     }
 
-    &.wallet-card > .wallet-card-top-row {
+    &.pair-card > .pair-card-currency-row {
       transition: none 300ms;
       height: 120px;
     }
-    &.wallet-card:hover > .wallet-card-top-row {
+    &.pair-card:hover > .pair-card-currency-row {
       height: 70px;
       bottom: 0;
       opacity: 1;
       pointer-events: auto;
     }
-    &.wallet-card > .wallet-card-bottom-section {
+    &.pair-card > .pair-card-bottom-section {
       transform: none;
       height: 70px;
       opacity: 1;
@@ -163,9 +195,9 @@ export const WalletCardWrapper = styled(BaseWalletCardWrapper)`
 `};
 `
 
-export const WalletCardBottomSection = styled(AutoColumn)`
+export const PairCardBottomSection = styled(AutoColumn)`
   opacity: 0;
-  height: 110px;
+  height: 60px;
   transition: all 300ms;
   position: absolute;
   bottom: -50px;
@@ -179,6 +211,13 @@ export const WalletCardBottomSection = styled(AutoColumn)`
     opacity: 1;
     pointer-events: auto;
   `};
+`
+
+export const PairUsdValue = styled(Text) `
+  position: absolute;
+  transition: all 300ms;
+  left: 16px;
+  bottom: 16px;
 `
 
 export const TruncatedText = styled(Text)`

@@ -3,24 +3,8 @@ import styled from 'styled-components'
 import { AutoColumn } from 'components/Column'
 import OnRampBackgroundImage from '../../assets/images/on-ramp-background.png'
 import { AutoRow } from 'components/Row'
+import { BaseWalletCardWrapper } from 'components/Grid'
 
-
-export const BaseWalletCardWrapper = styled(AutoColumn)`
-  position: relative;
-  background: ${({ theme }) => `linear-gradient(to right, ${theme.bg4}, ${theme.bg5});`};
-  box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.01), 0px 4px 8px rgba(0, 0, 0, 0.04), 0px 16px 24px rgba(0, 0, 0, 0.04),
-  0px 24px 32px rgba(0, 0, 0, 0.01);
-  border-radius: 5px;
-  padding: 18px;
-  padding-top: 28px;
-  padding-bottom: 28px;
-  width: 100%;
-  height: 326px;
-
-  ${({ theme }) => theme.mediaWidth.upToSmall`
-    height: 220px;
-  `};
-`
 
 export const OnRampWalletCardWrapper = styled(BaseWalletCardWrapper)`
   overflow: hidden;
@@ -74,7 +58,7 @@ export const OnRampWalletCardWrapper = styled(BaseWalletCardWrapper)`
 
 export const OnRampCardBackground = styled.image`
   background-image: url(${OnRampBackgroundImage});
-  opacity: 0.15;
+  opacity: 0.4;
   position: absolute;
   top: 0;
   left: 0;
@@ -96,6 +80,7 @@ export const OnRampRevealableWrapper = styled(AutoRow)`
   left: 0px;
   right: 0px;
   height: 64px;
+  z-index: 3;
 `
 
 export const WalletCardWrapper = styled(BaseWalletCardWrapper)`

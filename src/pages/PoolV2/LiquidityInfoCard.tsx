@@ -2,14 +2,15 @@ import { AutoColumn } from 'components/Column'
 import React from 'react'
 import { Text } from 'rebass'
 import { Link } from 'react-router-dom'
-import { OnRampWalletCardWrapper, OnRampCardBackground, OnRampRevealableWrapper } from './styleds'
+import { LiquidityInfoCardWrapper, LiquidityInfoCardBackground, LiquidityInfoRevealableWrapper } from './styleds'
 import { ButtonPrimary } from 'components/Button'
+import { AutoRow } from 'components/Row'
 
 export default function LiquidityInfoCard() {
   return (
-    <OnRampWalletCardWrapper className="pool-info-card" gap="lg">
-        <OnRampCardBackground className="pool-img-background"/>
-        <AutoColumn className="pool-info-text" justify="center" gap="sm" style={{ placeItems: 'center' }}>
+    <LiquidityInfoCardWrapper className="pair-info-card" gap="lg">
+        <LiquidityInfoCardBackground className="pair-info-img-background"/>
+        <AutoColumn className="pair-info-text" justify="center" gap="sm" style={{ placeItems: 'center' }}>
             <Text fontSize={24} fontWeight={500} textAlign='center'>
                 Stakenet Liquidity
             </Text>
@@ -17,26 +18,28 @@ export default function LiquidityInfoCard() {
                 Liquidity providers and orderbook hosting masternodes split the 0.3% trading fee. At the current dex volume, liquidity providers earn 67.5% of the fee. Liquidity, volume, and fees are shared between the web app and light wallet dexes.
             </Text>
         </AutoColumn>
-        <OnRampRevealableWrapper className="pool-info-revealable-button-row" justify="center">
-        <ButtonPrimary
-                padding="8px"
-                borderRadius="8px"
-                as={Link}
-                to={`/onramp`}
-                width="48%"
-            >
-                Create A Pair
-            </ButtonPrimary>
-            <ButtonPrimary
-                padding="8px"
-                borderRadius="8px"
-                as={Link}
-                to={`/onramp`}
-                width="48%"
-            >
-                Add Liquidity
-            </ButtonPrimary>
-        </OnRampRevealableWrapper>
-    </OnRampWalletCardWrapper>
+        <LiquidityInfoRevealableWrapper className="pair-info-revealable-button-row" justify="center">
+            <AutoRow justify='space-between' gap='md'>
+                <ButtonPrimary
+                    padding="8px"
+                    borderRadius="8px"
+                    as={Link}
+                    to={`/onramp`}
+                    width="48%"
+                >
+                    Create A Pair
+                </ButtonPrimary>
+                <ButtonPrimary
+                    padding="8px"
+                    borderRadius="8px"
+                    as={Link}
+                    to={`/onramp`}
+                    width="48%"
+                >
+                    Add Liquidity
+                </ButtonPrimary>
+            </AutoRow>
+        </LiquidityInfoRevealableWrapper>
+    </LiquidityInfoCardWrapper>
   )
 }

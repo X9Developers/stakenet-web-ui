@@ -376,24 +376,24 @@ export default function Header() {
                 } */}
                 $
                 {account && (
-                  <HideSmall>
-                    <TYPE.white
-                      style={{
-                        paddingRight: '.4rem'
-                      }}
-                    >
-                      <CountUp
-                        key={countUpValue}
-                        isCounting
-                        start={parseFloat(countUpValuePrevious)}
-                        end={parseFloat(countUpValue)}
-                        thousandsSeparator={','}
-                        duration={1}
-                      />
-                    </TYPE.white>
-                  </HideSmall>
+                  <TYPE.white
+                    style={{
+                      paddingRight: '.4rem'
+                    }}
+                  >
+                    <CountUp
+                      key={countUpValue}
+                      isCounting
+                      start={parseFloat(countUpValuePrevious)}
+                      end={parseFloat(countUpValue)}
+                      thousandsSeparator={','}
+                      duration={1}
+                    />
+                  </TYPE.white>
                 )}
-                USD
+                <HideSmall>
+                  USD
+                </HideSmall>
               </WalletBalanceAmount>
               <CardNoise />
             </WalletBalanceWrapper>

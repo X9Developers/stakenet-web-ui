@@ -1,21 +1,18 @@
-# Uniswap Interface
+# Stakenet Web Dex Interface
 
-[![Lint](https://github.com/Uniswap/uniswap-interface/workflows/Lint/badge.svg)](https://github.com/Uniswap/uniswap-interface/actions?query=workflow%3ALint)
-[![Tests](https://github.com/Uniswap/uniswap-interface/workflows/Tests/badge.svg)](https://github.com/Uniswap/uniswap-interface/actions?query=workflow%3ATests)
-[![Styled With Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://prettier.io/)
+The open source interface of the Stakenet Web Dex -- a Layer 2 dex built on the stakenet masternode network of connext routers.
+This project is currently in development, and is subject to frequent breaking changes.
+The web dex should not be used to execute trades yet, this readme will be updated when that status changes.
 
-An open source interface for Uniswap -- a protocol for decentralized exchange of Ethereum tokens.
+- Website: [stakenet.io](https://stakenet.io/)
+- Interface: [stakenet.app](https://stakenet.app)
+- Twitter: [@XSNofficial](https://twitter.com/XSNofficial)
+- Email: [contact@stakenet.io](mailto:contact@stakenet.io)
+- Discord: [Stakenet](https://discord.gg/8a6gFVDTNA)
+- Telegram: [Stakenet (XSN) English](https://t.me/joinchat/BdGxxw-s3b4_DdBdbChI4g)
+- Whitepaper: [Link](https://stakenet.io/Stakenet_Whitepaper.pdf)
 
-- Website: [uniswap.org](https://uniswap.org/)
-- Interface: [app.uniswap.org](https://app.uniswap.org)
-- Docs: [uniswap.org/docs/](https://uniswap.org/docs/)
-- Twitter: [@UniswapProtocol](https://twitter.com/UniswapProtocol)
-- Reddit: [/r/Uniswap](https://www.reddit.com/r/Uniswap/)
-- Email: [contact@uniswap.org](mailto:contact@uniswap.org)
-- Discord: [Uniswap](https://discord.gg/FCfyBSbCU5)
-- Whitepaper: [Link](https://hackmd.io/C-DvwDSfSxuh-Gd4WKE_ig)
-
-## Accessing the Uniswap Interface
+## Accessing the Stakenet Web Dex
 
 Visit [stakenet.app](https://stakenet.app).
 
@@ -24,8 +21,6 @@ Visit [stakenet.app](https://stakenet.app).
 The Stakenet WebApp is currently hooked into the uniswap token list. Please see the
 [@uniswap/default-token-list](https://github.com/uniswap/default-token-list) 
 repository.
-
-## Development
 
 ### Install Dependencies
 

@@ -149,12 +149,12 @@ export function useAggregateWalletBalance(): TokenAmount | undefined {
 }
 
 // Wallet Page functions
-export function useSyntheticLiquidityPairs(): Pair[] {
+export function useSyntheticPools(): Pair[] {
   return [
-    new Pair(new TokenAmount(MAINNETH_WETH, JSBI.BigInt(10000)), new TokenAmount(AMPL, JSBI.BigInt(20000))),
-    new Pair(new TokenAmount(MAINNETH_WETH, JSBI.BigInt(1000)), new TokenAmount(USDT, JSBI.BigInt(18547))),
-    new Pair(new TokenAmount(MAINNETH_WETH, JSBI.BigInt(4000000)), new TokenAmount(WBTC, JSBI.BigInt(500))),
-    new Pair(new TokenAmount(MAINNETH_WETH, JSBI.BigInt(10000)), new TokenAmount(MKR, JSBI.BigInt(20000))),
+    new Pair(new TokenAmount(MAINNETH_WETH, JSBI.BigInt(6300000000000000000)), new TokenAmount(AMPL, JSBI.BigInt(200000000000))),
+    new Pair(new TokenAmount(MAINNETH_WETH, JSBI.BigInt(833646000000000000)), new TokenAmount(USDT, JSBI.BigInt(185000000))),
+    new Pair(new TokenAmount(MAINNETH_WETH, JSBI.BigInt(750270000000000000)), new TokenAmount(WBTC, JSBI.BigInt(467000))),
+    new Pair(new TokenAmount(MAINNETH_WETH, JSBI.BigInt(42543000000000000000)), new TokenAmount(MKR, JSBI.BigInt(236500000000000000))),
   ]
 }
 

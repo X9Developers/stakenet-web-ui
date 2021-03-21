@@ -9,7 +9,7 @@ export default function OnRampWalletCard() {
   return (
     <OnRampWalletCardWrapper className="on-ramp-wallet-card" gap="lg">
         <OnRampCardBackground className="on-ramp-img-background"/>
-        <AutoColumn className="on-ramp-text" justify="center" gap="lg" style={{ placeItems: 'center' }}>
+        <AutoColumn className="on-ramp-text" justify="center" gap="lg" style={{ placeItems: 'center', zIndex: 2 }}>
             <Text fontSize={24} fontWeight={500} textAlign='center'>
                 Layer 2 On-Ramp
             </Text>

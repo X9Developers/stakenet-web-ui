@@ -16,7 +16,6 @@ import { CountUp } from 'use-count-up'
 import { TYPE, ExternalLink } from '../../theme'
 
 import { YellowCard } from '../Card'
-import { Moon, Sun } from 'react-feather'
 import Menu from '../Menu'
 
 import Row, { RowFixed } from '../Row'
@@ -291,7 +290,7 @@ export default function Header() {
   const { t } = useTranslation()
 
   const userEthBalance = useETHBalances(account ? [account] : [])?.[account ?? '']
-  const [darkMode, toggleDarkMode] = useDarkModeManager()
+  const [darkMode] = useDarkModeManager()
   // const tokenBalances = useAllTokenBalances()
   const [usdWalletBalance, setUsdWalletBalance] = useState<TokenAmount | undefined>(undefined)
 
@@ -403,9 +402,6 @@ export default function Header() {
           </AccountElement>
         </HeaderElement>
         <HeaderElementWrap>
-          <StyledMenuButton onClick={() => toggleDarkMode()}>
-            {darkMode ? <Moon size={20} /> : <Sun size={20} />}
-          </StyledMenuButton>
           <Menu />
         </HeaderElementWrap>
       </HeaderControls>

@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { Pair } from '@uniswap/sdk'
+import { currencyEquals, ETHER, Pair, WETH } from '@uniswap/sdk'
 import { AutoRow } from 'components/Row'
 import { AutoColumn } from 'components/Column'
 import { Text } from 'rebass'
@@ -13,23 +13,29 @@ import { ButtonPrimary } from 'components/Button'
 import { currencyId } from 'utils/currencyId'
 import { Plus } from 'react-feather'
 import { ThemeContext } from 'styled-components'
+import { useActiveWeb3React } from 'hooks'
 
 export default function PoolCard({
     pair,
 }: {
     pair: Pair,
 }) {
+  const { chainId } = useActiveWeb3React()
+
   const pairUsdEquivalency = usePairUsdEquivalent(pair)
   const theme = useContext(ThemeContext)
+
+  const token0Eth = Boolean(chainId && currencyEquals(pair.token0, WETH[chainId])) ? ETHER : undefined
+  const token1Eth = Boolean(chainId && currencyEquals(pair.token1, WETH[chainId])) ? ETHER : undefined
 
   return (
     <PairCardWrapper className="pair-card" gap="0px">
         <AutoColumn className="pair-card-currency-rows-wrapper" gap="0px" justify="flex-start">
             <AutoRow className="pair-card-currency-row-1" justify='flex-start'>
-                <GlowingCurrencyLogo currency={pair.token0} size="110px" hexRounding="md"/>
+                <GlowingCurrencyLogo currency={ token0Eth ?? pair.token0 } size="110px" hexRounding="md"/>
                 <AutoColumn gap="8px">
                     <Text fontSize={18} fontWeight={500} textAlign='left'>
-                        {pair.token0.symbol}
+                        {(token0Eth ?? pair.token0).symbol}
                     </Text>
                     <TruncatedText style={{ flexShrink: 0 }} fontSize={24} fontWeight={500} textAlign='left'>
                         {pair.reserve0.toSignificant(6)}
@@ -42,13 +48,13 @@ export default function PoolCard({
             <AutoRow className="pair-card-currency-row-2" justify='flex-end'>
                 <AutoColumn gap="8px">
                     <Text fontSize={18} fontWeight={500} textAlign='right'>
-                        {pair.token1.symbol}
+                        {(token1Eth ?? pair.token1).symbol}
                     </Text>
                     <TruncatedText style={{ flexShrink: 0 }} fontSize={24} fontWeight={500} textAlign='right'>
                         {pair.reserve1.toSignificant(6)}
                     </TruncatedText>
                 </AutoColumn>
-                <GlowingCurrencyLogo currency={pair.token1} size="110px" hexRounding="md"/>
+                <GlowingCurrencyLogo currency={ token1Eth ?? pair.token1 } size="110px" hexRounding="md"/>
             </AutoRow>
         </AutoColumn>
         <PairUsdValue className="pair-usd-value" fontSize={16} fontWeight={300} textAlign='left'>

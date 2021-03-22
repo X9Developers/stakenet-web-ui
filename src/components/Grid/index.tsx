@@ -27,6 +27,7 @@ export const BaseWalletCardWrapper = styled(AutoColumn)`
   padding-bottom: 28px;
   width: 100%;
   height: 326px;
+  overflow: hidden;
 
   ${({ theme }) => theme.mediaWidth.upToSmall`
     height: 220px;

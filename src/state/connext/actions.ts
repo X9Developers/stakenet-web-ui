@@ -1,4 +1,6 @@
 import { createAction } from '@reduxjs/toolkit'
+import { Field } from 'state/swap/actions';
+import { ConnextAsset } from './reducer';
 
 export const ERROR_STATES = {
   ERROR_SETUP: "ERROR_SETUP",
@@ -19,23 +21,26 @@ export const SCREEN_STATES = {
 } as const;
 export type ScreenStates = keyof typeof SCREEN_STATES;
 
-export const setConnextTransferAmountUi = createAction<{ }
+export const selectCurrency = createAction<{
+  field: Field;
+  connextAsset: ConnextAsset }
+>('connext/selectCurrency')
+export const switchCurrencies = createAction<void>('connext/switchCurrencies')
+export const typeInput = createAction<{ field: Field; typedValue: string }>('connext/typeInput')
+export const setSuccessOutputAmount = createAction<{ successOutputAmount: string }>('connext/setSuccessOutputAmount')
+export const setOutputTx = createAction<{ outputTx: string }>('connext/setOutputTx')
+export const setTxError = createAction<{ txError: string }>('connext/setTxError')
+export const setTxAmountError = createAction<{ txAmountError: string }>('connext/setTxAmountError')
 
-// OLD
 
-export enum Field {
-  INPUT = 'INPUT',
-  OUTPUT = 'OUTPUT'
-}
 
-export const selectCurrency = createAction<{ field: Field; currencyId: string }>('swap/selectCurrency')
-export const switchCurrencies = createAction<void>('swap/switchCurrencies')
-export const typeInput = createAction<{ field: Field; typedValue: string }>('swap/typeInput')
-export const replaceSwapState = createAction<{
-  field: Field
+export const replaceConnextState = createAction<{
+  independentField: Field
   typedValue: string
-  inputCurrencyId?: string
-  outputCurrencyId?: string
-  recipient: string | null
-}>('swap/replaceSwapState')
-export const setRecipient = createAction<{ recipient: string | null }>('swap/setRecipient')
+  inputConnextAsset: ConnextAsset
+  outputConnextAsset: ConnextAsset
+  successOutputAmount: string,
+  outputTx: string,
+  txError: string,
+  txAmountError: string,
+}>('connext/replaceConnextState')

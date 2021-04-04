@@ -1,25 +1,22 @@
 import { CHAIN_DETAIL } from '@connext/vector-sdk'
 import { createReducer } from '@reduxjs/toolkit'
-import { Field, replaceSwapState, selectCurrency, setRecipient, switchCurrencies, typeInput } from './actions'
+import { Field } from 'state/swap/actions'
+import { replaceConnextState, selectCurrency, switchCurrencies, typeInput, setSuccessOutputAmount, setOutputTx, setTxError, setTxAmountError } from './actions'
+
+export interface ConnextAsset {
+  readonly chain: CHAIN_DETAIL | undefined
+  readonly assetId: string | undefined
+}
 
 export interface ConnextState {
   readonly independentField: Field
   readonly typedValue: string
-  readonly [Field.INPUT]: {
-    readonly chain: CHAIN_DETAIL | undefined
-    readonly assetId: string | undefined
-    readonly assetUserBalance: string | undefined
-    readonly assetChannelBalance: string | undefined
-  }
-  readonly [Field.OUTPUT]: {
-    readonly chain: CHAIN_DETAIL | undefined
-    readonly assetId: string | undefined
-    readonly assetChannelBalance: string | undefined
-  }
+  readonly [Field.INPUT]: ConnextAsset
+  readonly [Field.OUTPUT]: ConnextAsset
   
-  readonly inputTransferAmountUi: string // --> HOOK
-  readonly outputTransferAmountUi: string // --> HOOK
-  readonly transferFee: string // --> HOOK
+  // readonly inputTransferAmountUi: string // --> HOOK
+  // readonly outputTransferAmountUi: string // --> HOOK
+  // readonly transferFee: string // --> HOOK
   // readonly transferQuote: TransferQuote // --> HOOK
 
   readonly successOutputAmount: string
@@ -35,71 +32,66 @@ const initialState: ConnextState = {
   [Field.INPUT]: {
     chain: undefined,
     assetId: undefined,
-    assetUserBalance: undefined,
-    assetChannelBalance: undefined,
   },
   [Field.OUTPUT]: {
     chain: undefined,
     assetId: undefined,
-    assetChannelBalance: undefined,
   },
   
-  inputTransferAmountUi: '', // --> HOOK
-  outputTransferAmountUi: '', // --> HOOK
-  transferFee: '', // --> HOOK
+  // inputTransferAmountUi: '', // --> HOOK
+  // outputTransferAmountUi: '', // --> HOOK
+  // transferFee: '', // --> HOOK
   // transferQuote: TransferQuote // --> HOOK
 
   successOutputAmount: '',
-
   outputTx: '',
   txError: '',
   txAmountError: '',
 }
 
+const getOtherField = (field: Field): Field => {
+  return field === Field.INPUT ? Field.OUTPUT : Field.INPUT
+}
+
 export default createReducer<ConnextState>(initialState, builder =>
   builder
     .addCase(
-      replaceSwapState,
-      (state, { payload: { typedValue, recipient, field, inputCurrencyId, outputCurrencyId } }) => {
+      replaceConnextState,
+      (state, { payload: { independentField, typedValue, inputConnextAsset, outputConnextAsset, successOutputAmount, outputTx, txError, txAmountError } }) => ({
+        independentField,
+        typedValue,
+        [Field.INPUT]: inputConnextAsset,
+        [Field.OUTPUT]: outputConnextAsset,
+        successOutputAmount,
+        outputTx,
+        txError,
+        txAmountError,
+      })
+    )
+    .addCase(
+      selectCurrency,
+      (state, { payload: { field, connextAsset } }) => {
+        const otherField = getOtherField(field)
+        if (connextAsset.assetId === state[otherField].assetId) {
+          return {
+            ...state,
+            independentField: getOtherField(state.independentField),
+            [field]: connextAsset,
+            [otherField]: state[field],
+          }
+        }
         return {
-          [Field.INPUT]: {
-            currencyId: inputCurrencyId
-          },
-          [Field.OUTPUT]: {
-            currencyId: outputCurrencyId
-          },
-          independentField: field,
-          typedValue: typedValue,
-          recipient
+          ...state,
+          [field]: connextAsset
         }
       }
     )
-    .addCase(selectCurrency, (state, { payload: { currencyId, field } }) => {
-      const otherField = field === Field.INPUT ? Field.OUTPUT : Field.INPUT
-      if (currencyId === state[otherField].currencyId) {
-        // the case where we have to swap the order
-        return {
-          ...state,
-          independentField: state.independentField === Field.INPUT ? Field.OUTPUT : Field.INPUT,
-          [field]: { currencyId: currencyId },
-          [otherField]: { currencyId: state[field].currencyId }
-        }
-      } else {
-        // the normal case
-        return {
-          ...state,
-          [field]: { currencyId: currencyId }
-        }
-      }
-    })
-    .addCase(switchCurrencies, state => {
-      return {
-        ...state,
-        independentField: state.independentField === Field.INPUT ? Field.OUTPUT : Field.INPUT,
-        [Field.INPUT]: { currencyId: state[Field.OUTPUT].currencyId },
-        [Field.OUTPUT]: { currencyId: state[Field.INPUT].currencyId }
-      }
-    })
+    .addCase(switchCurrencies, state => ({
+      ...state,
+      independentField: getOtherField(state.independentField),
+      [Field.INPUT]: state[Field.OUTPUT],
+      [Field.OUTPUT]: state[Field.INPUT],
+    }))
     .addCase(typeInput, (state, { payload: { field, typedValue } }) => {
       return {
         ...state,
@@ -107,7 +99,20 @@ export default createReducer<ConnextState>(initialState, builder =>
         typedValue
       }
     })
-    .addCase(setRecipient, (state, { payload: { recipient } }) => {
-      state.recipient = recipient
-    })
+    .addCase(setSuccessOutputAmount, (state, { payload: { successOutputAmount } }) => ({
+      ...state,
+      successOutputAmount,
+    }))
+    .addCase(setOutputTx, (state, { payload: { outputTx } }) => ({
+      ...state,
+      outputTx,
+    }))
+    .addCase(setTxError, (state, { payload: { txError } }) => ({
+      ...state,
+      txError,
+    }))
+    .addCase(setTxAmountError, (state, { payload: { txAmountError } }) => ({
+      ...state,
+      txAmountError,
+    }))
 )

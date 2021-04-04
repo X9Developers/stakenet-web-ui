@@ -304,10 +304,12 @@ export default function Header() {
   const countUpValue = usdWalletBalance?.toFixed(2) ?? '0'
   const countUpValuePrevious = usePrevious(countUpValue) ?? '0'
   const incrementUSDWalletBalance = (increment: CurrencyAmount | undefined): void => {
-    setUsdWalletBalance(new TokenAmount(USDT, JSBI.add(usdWalletBalance?.raw ?? JSBI.BigInt(0), increment?.raw ?? JSBI.BigInt(0))))
+    if (chainId == null) return;
+    setUsdWalletBalance(new TokenAmount(USDT[chainId], JSBI.add(usdWalletBalance?.raw ?? JSBI.BigInt(0), increment?.raw ?? JSBI.BigInt(0))))
   }
   const decrementUSDWalletBalance = (decrement: CurrencyAmount | undefined): void => {
-    setUsdWalletBalance(new TokenAmount(USDT, JSBI.subtract(usdWalletBalance?.raw ?? JSBI.BigInt(0), decrement?.raw ?? JSBI.BigInt(0))))
+    if (chainId == null) return;
+    setUsdWalletBalance(new TokenAmount(USDT[chainId], JSBI.subtract(usdWalletBalance?.raw ?? JSBI.BigInt(0), decrement?.raw ?? JSBI.BigInt(0))))
   }
 
   return (

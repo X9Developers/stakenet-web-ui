@@ -1,5 +1,5 @@
-import { AMPL, MAINNETH_WETH, MKR, USDT, WBTC } from './../../constants/index'
-import { Currency, CurrencyAmount, ETHER, JSBI, Pair, Token, TokenAmount } from '@uniswap/sdk'
+import { AMPL, MKR, USDT, WBTC } from './../../constants/index'
+import { ChainId, Currency, CurrencyAmount, ETHER, JSBI, Pair, Token, TokenAmount, WETH } from '@uniswap/sdk'
 import { useMemo } from 'react'
 import ERC20_INTERFACE from '../../constants/abis/erc20'
 import { useAllTokens } from '../../hooks/Tokens'
@@ -135,6 +135,9 @@ export function useAllTokenBalances(): { [tokenAddress: string]: TokenAmount | u
 // get the total owned, unclaimed, and unharvested UNI for account
 export function useAggregateWalletBalance(): TokenAmount | undefined {
   const allTokenBalances = useAllTokenBalances()
+  const { chainId } = useActiveWeb3React()
+  if (chainId == null) return
+
 
   const usdBalance = Object.entries(allTokenBalances)
     .filter(([_, tokenBalance]) => tokenBalance != null)
@@ -143,27 +146,37 @@ export function useAggregateWalletBalance(): TokenAmount | undefined {
     }, JSBI.BigInt(0))
 
   return new TokenAmount(
-    USDT,
+    USDT[chainId],
     usdBalance,
   )
 }
 
 // Wallet Page functions
 export function useSyntheticPools(): Pair[] {
+  const { chainId } = useActiveWeb3React()
+  if (chainId !== ChainId.MAINNET) { return [] }
   return [
-    new Pair(new TokenAmount(MAINNETH_WETH, JSBI.BigInt(630000000000000000)), new TokenAmount(AMPL, JSBI.BigInt(26530000000))),
-    new Pair(new TokenAmount(MAINNETH_WETH, JSBI.BigInt(833646000000000000)), new TokenAmount(USDT, JSBI.BigInt(185000000))),
-    new Pair(new TokenAmount(MAINNETH_WETH, JSBI.BigInt(750270000000000000)), new TokenAmount(WBTC, JSBI.BigInt(467000))),
-    new Pair(new TokenAmount(MAINNETH_WETH, JSBI.BigInt(425430000000000000)), new TokenAmount(MKR, JSBI.BigInt(2365000000000000))),
+    new Pair(new TokenAmount(WETH[chainId], JSBI.BigInt(630000000000000000)), new TokenAmount(AMPL, JSBI.BigInt(26530000000))),
+    new Pair(new TokenAmount(WETH[chainId], JSBI.BigInt(833646000000000000)), new TokenAmount(USDT[chainId], JSBI.BigInt(185000000))),
+    new Pair(new TokenAmount(WETH[chainId], JSBI.BigInt(750270000000000000)), new TokenAmount(WBTC, JSBI.BigInt(467000))),
+    new Pair(new TokenAmount(WETH[chainId], JSBI.BigInt(425430000000000000)), new TokenAmount(MKR, JSBI.BigInt(2365000000000000))),
   ]
 }
 
 export function useSyntheticWallet(): CurrencyAmount[] {
-  return [
-    CurrencyAmount.ether(JSBI.BigInt(2300000000000000000)),
-    new TokenAmount(USDT, JSBI.BigInt(1850000000)),
-    new TokenAmount(AMPL, JSBI.BigInt(278700000000)),
-    new TokenAmount(WBTC, JSBI.BigInt(4675000)),
-    new TokenAmount(MKR, JSBI.BigInt(236554000000000000)),
-  ]
+  const { chainId } = useActiveWeb3React()
+  switch (chainId) {
+    case ChainId.MAINNET: return [
+      CurrencyAmount.ether(JSBI.BigInt(2300000000000000000)),
+      new TokenAmount(USDT[ChainId.MAINNET], JSBI.BigInt(1850000000)),
+      new TokenAmount(AMPL, JSBI.BigInt(278700000000)),
+      new TokenAmount(WBTC, JSBI.BigInt(4675000)),
+      new TokenAmount(MKR, JSBI.BigInt(236554000000000000)),
+    ]
+    case ChainId.RINKEBY: return [
+      CurrencyAmount.ether(JSBI.BigInt(2300000000000000000)),
+      new TokenAmount(USDT[ChainId.RINKEBY], JSBI.BigInt(1850000000)),
+    ]
+    default: return []
+  }
 }

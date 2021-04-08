@@ -17,6 +17,16 @@ export function isAddress(value: any): string | false {
   }
 }
 
+export function isValidChain(value: any): boolean {
+  if (typeof value === 'string') {
+    value = parseInt(value)
+  }
+  if (typeof value === 'number') {
+    return [ChainId.MAINNET, ChainId.RINKEBY].indexOf(value) > -1
+  }
+  return false
+}
+
 const ETHERSCAN_PREFIXES: { [chainId in ChainId]: string } = {
   1: '',
   3: 'ropsten.',

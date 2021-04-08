@@ -37,8 +37,8 @@ export const setTxAmountError = createAction<{ txAmountError: string }>('connext
 export const replaceConnextState = createAction<{
   independentField: Field
   typedValue: string
-  inputConnextAsset: ConnextAsset
-  outputConnextAsset: ConnextAsset
+  inputConnextAsset: ConnextAsset | undefined
+  outputConnextAsset: ConnextAsset | undefined
   successOutputAmount: string,
   outputTx: string,
   txError: string,

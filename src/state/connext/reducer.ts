@@ -11,8 +11,8 @@ export interface ConnextAsset {
 export interface ConnextState {
   readonly independentField: Field
   readonly typedValue: string
-  readonly [Field.INPUT]: ConnextAsset
-  readonly [Field.OUTPUT]: ConnextAsset
+  readonly [Field.INPUT]: ConnextAsset | undefined
+  readonly [Field.OUTPUT]: ConnextAsset | undefined
   
   // readonly inputTransferAmountUi: string // --> HOOK
   // readonly outputTransferAmountUi: string // --> HOOK
@@ -72,7 +72,7 @@ export default createReducer<ConnextState>(initialState, builder =>
       selectCurrency,
       (state, { payload: { field, connextAsset } }) => {
         const otherField = getOtherField(field)
-        if (connextAsset.assetId === state[otherField].assetId) {
+        if (connextAsset.assetId === state[otherField]?.assetId) {
           return {
             ...state,
             independentField: getOtherField(state.independentField),

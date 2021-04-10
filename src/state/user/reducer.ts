@@ -15,14 +15,19 @@ import {
   updateUserDeadline,
   toggleURLWarning,
   updateUserSingleHopOnly,
-  updateChannelWalletExists
+  updateChannelWalletAddress,
+  updateChannelWalletError,
 } from './actions'
 
 const currentTimestamp = () => new Date().getTime()
 
 export interface UserState {
   // the timestamp of the last updateVersion action
-  channelWalletExists: boolean
+  channelWalletAddress?: string
+  channelWalletError?: Error
+  channelWalletActive?: boolean
+
+
   lastUpdateVersionTimestamp?: number
 
   userDarkMode: boolean | null // the user's choice for dark mode or light mode
@@ -60,7 +65,6 @@ function pairKey(token0Address: string, token1Address: string) {
 }
 
 export const initialState: UserState = {
-  channelWalletExists: false,
   userDarkMode: null,
   matchesDarkMode: false,
   userExpertMode: false,
@@ -75,8 +79,12 @@ export const initialState: UserState = {
 
 export default createReducer(initialState, builder =>
   builder
-    .addCase(updateChannelWalletExists, (state, action) => {
-      state.channelWalletExists = action.payload.channelWalletExists,
+    .addCase(updateChannelWalletAddress, (state, action) => {
+      state.channelWalletAddress = action.payload.channelWalletAddress
+      state.timestamp = currentTimestamp()
+    })
+    .addCase(updateChannelWalletError, (state, action) => {
+      state.channelWalletError = action.payload.channelWalletError
       state.timestamp = currentTimestamp()
     })
     .addCase(updateVersion, state => {

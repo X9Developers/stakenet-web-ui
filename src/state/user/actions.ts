@@ -13,6 +13,12 @@ export interface SerializedPair {
   token1: SerializedToken
 }
 
+export const updateChannelWalletState = createAction<{
+  channelWalletAddress?: string,
+  channelWalletError?: Error,
+  channelWalletActive?: boolean,
+}>('user/updateChannelWalletState')
+
 export const updateMatchesDarkMode = createAction<{ matchesDarkMode: boolean }>('user/updateMatchesDarkMode')
 export const updateUserDarkMode = createAction<{ userDarkMode: boolean }>('user/updateUserDarkMode')
 export const updateUserExpertMode = createAction<{ userExpertMode: boolean }>('user/updateUserExpertMode')

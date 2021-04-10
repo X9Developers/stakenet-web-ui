@@ -218,7 +218,7 @@ interface AccountDetailsProps {
   openOptions: () => void
 }
 
-export default function AccountDetails({
+export default function ChannelWalletAccountDetails({
   toggleWalletModal,
   pendingTransactions,
   confirmedTransactions,

@@ -168,12 +168,14 @@ export function useIsTransactionUnsupported(currencyIn?: Currency, currencyOut?:
 }
 
 export function useUsdEquivalent(inputAmount: CurrencyAmount | undefined): CurrencyAmount | undefined {
-  return useTradeExactIn(inputAmount, USDT)?.outputAmount
+  const { chainId } = useActiveWeb3React()
+  return useTradeExactIn(chainId != null ? inputAmount : undefined, chainId != null ? USDT[chainId] : undefined)?.outputAmount
 }
 
 export function usePairUsdEquivalent(pair: Pair): CurrencyAmount | undefined {
-  const reserve0usd = useTradeExactIn(pair.reserve0, USDT)?.outputAmount
-  const reserve1usd = useTradeExactIn(pair.reserve1, USDT)?.outputAmount
+  const { chainId } = useActiveWeb3React()
+  const reserve0usd = useTradeExactIn(chainId != null ? pair.reserve0 : undefined, chainId != null ? USDT[chainId] : undefined)?.outputAmount
+  const reserve1usd = useTradeExactIn(chainId != null ? pair.reserve1 : undefined, chainId != null ? USDT[chainId] : undefined)?.outputAmount
   if (reserve0usd != null && reserve1usd != null) {
     return reserve0usd.add(reserve1usd)
   }

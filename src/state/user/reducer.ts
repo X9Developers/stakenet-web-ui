@@ -15,8 +15,7 @@ import {
   updateUserDeadline,
   toggleURLWarning,
   updateUserSingleHopOnly,
-  updateChannelWalletAddress,
-  updateChannelWalletError,
+  updateChannelWalletState,
 } from './actions'
 
 const currentTimestamp = () => new Date().getTime()
@@ -79,12 +78,10 @@ export const initialState: UserState = {
 
 export default createReducer(initialState, builder =>
   builder
-    .addCase(updateChannelWalletAddress, (state, action) => {
+    .addCase(updateChannelWalletState, (state, action) => {
       state.channelWalletAddress = action.payload.channelWalletAddress
-      state.timestamp = currentTimestamp()
-    })
-    .addCase(updateChannelWalletError, (state, action) => {
       state.channelWalletError = action.payload.channelWalletError
+      state.channelWalletActive = action.payload.channelWalletActive
       state.timestamp = currentTimestamp()
     })
     .addCase(updateVersion, state => {

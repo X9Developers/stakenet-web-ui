@@ -42,17 +42,18 @@ function deserializeToken(serializedToken: SerializedToken): Token {
   )
 }
 
-export function useChannelWalletState(): boolean {
-  const { channelWalletExists } = useSelector<
+export function useChannelWalletState(): { address: string | undefined, error: Error | undefined } {
+  const { channelWalletAddress, channelWalletError } = useSelector<
     AppState,
-    { channelWalletExists: boolean }
+    { channelWalletAddress: string | undefined, channelWalletError: Error | undefined }
   >(
-    ({ user: { channelWalletExists } }) => ({
-      channelWalletExists,
+    ({ user: { channelWalletAddress, channelWalletError } }) => ({
+      channelWalletAddress,
+      channelWalletError,
     }),
     shallowEqual
   )
-  return channelWalletExists
+  return { address: channelWalletAddress, error: channelWalletError }
 }
 
 export function useIsDarkMode(): boolean {

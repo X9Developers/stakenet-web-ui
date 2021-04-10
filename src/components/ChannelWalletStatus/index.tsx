@@ -1,10 +1,9 @@
-import { useChannelWalletReact } from '@channel-wallet-react/core'
 import { darken, lighten } from 'polished'
 import React, { useMemo } from 'react'
 import { Activity } from 'react-feather'
 import { useTranslation } from 'react-i18next'
+import { useChannelWalletState } from 'state/user/hooks'
 import styled, { css } from 'styled-components'
-import { NetworkContextName } from '../../constants'
 import useENSName from '../../hooks/useENSName'
 import { useHasSocks } from '../../hooks/useSocksBalance'
 import { useWalletModalToggle } from '../../state/application/hooks'
@@ -115,9 +114,9 @@ const SOCK = (
 
 function ChannelWalletStatusInner() {
   const { t } = useTranslation()
-  const { account, error } = useChannelWalletReact()
+  const { address, error } = useChannelWalletState()
 
-  const { ENSName } = useENSName(account ?? undefined)
+  const { ENSName } = useENSName(address ?? undefined)
 
   const allTransactions = useAllTransactions()
 
@@ -132,7 +131,7 @@ function ChannelWalletStatusInner() {
   const hasSocks = useHasSocks()
   const toggleWalletModal = useWalletModalToggle()
 
-  if (account) {
+  if (address) {
     return (
       <ChannelWalletStatusConnected id="channel-wallet-status-connected" onClick={toggleWalletModal} pending={hasPendingTransactions}>
         {hasPendingTransactions ? (
@@ -142,7 +141,7 @@ function ChannelWalletStatusInner() {
         ) : (
           <>
             {hasSocks ? SOCK : null}
-            <Text>{ENSName || shortenAddress(account)}</Text>
+            <Text>{ENSName || shortenAddress(address)}</Text>
           </>
         )}
       </ChannelWalletStatusConnected>
@@ -156,7 +155,7 @@ function ChannelWalletStatusInner() {
     )
   } else {
     return (
-      <ChannelWalletStatusConnect id="create-wallet" onClick={toggleWalletModal} faded={!account}>
+      <ChannelWalletStatusConnect id="create-wallet" onClick={toggleWalletModal} faded={!address}>
         <Text>{t('Create Wallet')}</Text>
       </ChannelWalletStatusConnect>
     )
@@ -164,10 +163,8 @@ function ChannelWalletStatusInner() {
 }
 
 export default function ChannelWalletStatus() {
-  const { active, account } = useChannelWalletReact()
-  const contextNetwork = useChannelWalletReact(NetworkContextName)
-
-  const { ENSName } = useENSName(account ?? undefined)
+  const { active, address } = useChannelWalletState()
+  const { ENSName } = useENSName(address ?? undefined)
 
   const allTransactions = useAllTransactions()
 
@@ -179,7 +176,7 @@ export default function ChannelWalletStatus() {
   const pending = sortedRecentTransactions.filter(tx => !tx.receipt).map(tx => tx.hash)
   const confirmed = sortedRecentTransactions.filter(tx => tx.receipt).map(tx => tx.hash)
 
-  if (!contextNetwork.active && !active) {
+  if (!active) {
     return null
   }
 

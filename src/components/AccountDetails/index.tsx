@@ -6,7 +6,7 @@ import { AppDispatch } from '../../state'
 import { clearAllTransactions } from '../../state/transactions/actions'
 import { shortenAddress } from '../../utils'
 import { AutoRow } from '../Row'
-import Copy from './Copy'
+import Copy from '../CopyIcon'
 import Transaction from './Transaction'
 
 import { SUPPORTED_WALLETS } from '../../constants'

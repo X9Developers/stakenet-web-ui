@@ -14,13 +14,15 @@ import {
   updateUserSlippageTolerance,
   updateUserDeadline,
   toggleURLWarning,
-  updateUserSingleHopOnly
+  updateUserSingleHopOnly,
+  updateChannelWalletExists
 } from './actions'
 
 const currentTimestamp = () => new Date().getTime()
 
 export interface UserState {
   // the timestamp of the last updateVersion action
+  channelWalletExists: boolean
   lastUpdateVersionTimestamp?: number
 
   userDarkMode: boolean | null // the user's choice for dark mode or light mode
@@ -58,6 +60,7 @@ function pairKey(token0Address: string, token1Address: string) {
 }
 
 export const initialState: UserState = {
+  channelWalletExists: false,
   userDarkMode: null,
   matchesDarkMode: false,
   userExpertMode: false,
@@ -72,6 +75,10 @@ export const initialState: UserState = {
 
 export default createReducer(initialState, builder =>
   builder
+    .addCase(updateChannelWalletExists, (state, action) => {
+      state.channelWalletExists = action.payload.channelWalletExists,
+      state.timestamp = currentTimestamp()
+    })
     .addCase(updateVersion, state => {
       // slippage isnt being tracked in local storage, reset to default
       // noinspection SuspiciousTypeOfGuard

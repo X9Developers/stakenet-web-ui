@@ -360,6 +360,7 @@ export default function Header() {
           {aggregateBalance && (
             <WalletBalanceWrapper onClick={() => setShowUniBalanceModal(true)}>
               <WalletBalanceAmount active={!!account && !availableClaim} style={{ pointerEvents: 'auto' }}>
+                {/* TODO: The usd accumulator will be polled against the stakenet api */}
                 <USDTokenBalanceAccumulator
                   currencyAmount={ userEthBalance }
                   incrementUSDWalletBalance={ incrementUSDWalletBalance }
@@ -397,6 +398,9 @@ export default function Header() {
               <CardNoise />
             </WalletBalanceWrapper>
           )}
+          <AccountElement active={!!account} style={{ pointerEvents: 'auto' }}>
+            <Web3Status />
+          </AccountElement>
           <AccountElement active={!!account} style={{ pointerEvents: 'auto' }}>
             <Web3Status />
           </AccountElement>

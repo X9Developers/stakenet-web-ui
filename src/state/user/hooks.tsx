@@ -2,7 +2,7 @@ import { ChainId, Pair, Token } from '@uniswap/sdk'
 import flatMap from 'lodash.flatmap'
 import ReactGA from 'react-ga'
 import { useCallback, useMemo } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { shallowEqual, useDispatch, useSelector } from 'react-redux'
 import { BASES_TO_TRACK_LIQUIDITY_FOR, PINNED_PAIRS } from '../../constants'
 
 import { useActiveWeb3React } from '../../hooks'
@@ -40,6 +40,19 @@ function deserializeToken(serializedToken: SerializedToken): Token {
     serializedToken.symbol,
     serializedToken.name
   )
+}
+
+export function useChannelWalletState(): boolean {
+  const { channelWalletExists } = useSelector<
+    AppState,
+    { channelWalletExists: boolean }
+  >(
+    ({ user: { channelWalletExists } }) => ({
+      channelWalletExists,
+    }),
+    shallowEqual
+  )
+  return channelWalletExists
 }
 
 export function useIsDarkMode(): boolean {

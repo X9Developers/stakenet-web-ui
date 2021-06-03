@@ -30,7 +30,13 @@ import Swap from './Swap'
 import { OpenClaimAddressModalAndRedirectToSwap, RedirectPathToSwapOnly, RedirectToSwap } from './Swap/redirects'
 import Vote from './Vote'
 import VotePage from './Vote/VotePage'
-import Wallet from './Wallet'
+import InitilizeWallet from './initializeWallet'
+import RedirectConfirmPassword from './initializeWallet/ConfirmPassword/redirects'
+import RedirectConfirmSeedPhrase from './initializeWallet/ConfirmSeedPhrase/redirects';
+import RedirectAddWallet from './initializeWallet/AddWallet/redirects';
+import RedirectSeedPhrase from './initializeWallet/SeedPhrase/redirects'
+import RedirectUnlockWallet from './initializeWallet/UnlockWallet/redirects';
+import RedirectRestoreWallet from './initializeWallet/RestoreWallet/redirects';
 
 const AppWrapper = styled.div`
   display: flex;
@@ -94,7 +100,7 @@ export default function App() {
               <Route exact strict path="/find" component={PoolFinder} />
               <Route exact strict path="/pool" component={PoolV2} />
               <Route exact strict path="/uni" component={Earn} />
-              <Route exact strict path="/wallet" component={Wallet} />
+              <Route exact strict path="/wallet" component={InitilizeWallet} />
               <Route exact strict path="/vote" component={Vote} />
               <Route exact strict path="/create" component={RedirectToAddLiquidity} />
               <Route exact path="/add" component={AddLiquidity} />
@@ -110,6 +116,12 @@ export default function App() {
               <Route exact strict path="/migrate/v1/:address" component={MigrateV1Exchange} />
               <Route exact strict path="/uni/:currencyIdA/:currencyIdB" component={Manage} />
               <Route exact strict path="/vote/:id" component={VotePage} />
+              <Route exact strict path="/wallet/confirm-seed-phrase" component={RedirectConfirmSeedPhrase} />
+              <Route exact strict path="/wallet/confirm-password" component={RedirectConfirmPassword} />
+              <Route exact strict path="/wallet/add-wallet" component={RedirectAddWallet} />
+              <Route exact strict path="/wallet/restore-wallet" component={RedirectRestoreWallet} />
+              <Route exact strict path="/wallet/seed-phrase" component={RedirectSeedPhrase} />
+              <Route exact strict path="/wallet/unlock" component={RedirectUnlockWallet} />
               <Route component={RedirectPathToSwapOnly} />
             </Switch>
           </Web3ReactManager>

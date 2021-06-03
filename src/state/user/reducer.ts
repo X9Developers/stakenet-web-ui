@@ -14,7 +14,11 @@ import {
   updateUserSlippageTolerance,
   updateUserDeadline,
   toggleURLWarning,
-  updateUserSingleHopOnly
+  updateUserSingleHopOnly,
+  updateUserHasWallet,
+  updateUserVault,
+  updateUserOnBoarding,
+  updateUserSeedPhraseBackup,
 } from './actions'
 
 const currentTimestamp = () => new Date().getTime()
@@ -51,6 +55,11 @@ export interface UserState {
 
   timestamp: number
   URLWarningVisible: boolean
+
+  hasWallet: boolean
+  vault: string
+  onBoarding: boolean
+  seedPhraseBackup: boolean
 }
 
 function pairKey(token0Address: string, token1Address: string) {
@@ -67,7 +76,13 @@ export const initialState: UserState = {
   tokens: {},
   pairs: {},
   timestamp: currentTimestamp(),
-  URLWarningVisible: true
+  URLWarningVisible: true,
+  hasWallet: false,
+  vault: '',
+  onBoarding: false,
+  seedPhraseBackup: false,
+
+
 }
 
 export default createReducer(initialState, builder =>
@@ -147,5 +162,21 @@ export default createReducer(initialState, builder =>
     })
     .addCase(toggleURLWarning, state => {
       state.URLWarningVisible = !state.URLWarningVisible
+    })
+    .addCase(updateUserHasWallet, (state, action) => {
+      state.hasWallet = action.payload.hasWallet
+      state.timestamp = currentTimestamp()
+    })
+    .addCase(updateUserVault, (state, action) => {
+      state.vault = action.payload.vault
+      state.timestamp = currentTimestamp()
+    })
+    .addCase(updateUserOnBoarding, (state, action) => {
+      state.onBoarding = action.payload.onBoarding
+      state.timestamp = currentTimestamp()
+    })
+    .addCase(updateUserSeedPhraseBackup, (state, action) => {
+      state.seedPhraseBackup = action.payload.seedPhraseBackup
+      state.timestamp = currentTimestamp()
     })
 )

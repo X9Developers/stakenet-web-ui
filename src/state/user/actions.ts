@@ -28,3 +28,7 @@ export const removeSerializedPair = createAction<{ chainId: number; tokenAAddres
   'user/removeSerializedPair'
 )
 export const toggleURLWarning = createAction<void>('app/toggleURLWarning')
+export const updateUserHasWallet = createAction<{ hasWallet: boolean }>('user/updateUserHasWallet')
+export const updateUserVault = createAction<{ vault: string }>('user/updateUserVault')
+export const updateUserOnBoarding = createAction<{ onBoarding: boolean }>('user/updateUserOnBoarding')
+export const updateUserSeedPhraseBackup = createAction<{ seedPhraseBackup: boolean }>('user/updateUserSeedPhraseBackup')

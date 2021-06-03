@@ -42,7 +42,8 @@ export function useFetchListCallback(): (listUrl: string, sendDispatch?: boolean
         })
         .catch(error => {
           console.debug(`Failed to get list at url ${listUrl}`, error)
-          sendDispatch && dispatch(fetchTokenList.rejected({ url: listUrl, requestId, errorMessage: error.message }))
+          // it causes crashes in the browser when the list cannot be obtained 
+          // sendDispatch && dispatch(fetchTokenList.rejected({ url: listUrl, requestId, errorMessage: error.message }))
           throw error
         })
     },

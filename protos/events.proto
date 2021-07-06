@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+import "models.proto";
+
+package io.stakenet.orderbook.protos;
+
+// Event specifying that one of your orders was matched to another one.
+message MyOrderMatched {
+    Trade trade = 1;
+    Order orderMatchedWith = 2; // The order which my order was matched
+}
+
+// Event produced after canceling an order that was previously matched.
+//
+// NOTE: The event is sent only to the peers involved in the match. The trading pair
+//   subscribers aren't notified on purpose.
+message MyMatchedOrderCanceled {
+    Trade trade = 1;
+}
+
+// Event specifying that an order was placed in the orderbook.
+//
+// NOTE: you are getting this only if you are subscribed to a trading pairs.
+message OrderPlaced {
+    Order order = 1;
+    string tradingPair = 2;
+}
+
+// Event specifying that an order was canceled in the orderbook.
+//
+// NOTE: you are getting this only if you are subscribed to a trading pairs.
+message OrderCanceled {
+    string orderId = 1; // deprecated
+    string tradingPair = 2;
+    Order order = 3; // the cancelled order
+}
+
+// Event specifying that two orders got matched in the orderbook.
+//
+// NOTE: you are getting this only if you are subscribed to a trading pairs.
+message OrdersMatched {
+    Trade trade = 1;
+    string tradingPair = 2;
+}
+
+// Event produced when a ṕeer sends a message to another peer when they have a matched order
+message NewOrderMessage {
+    string orderId = 1;
+    bytes message = 2;
+}
+
+// Event produced when a peer marks a swap as completed
+message SwapSuccess {
+    Trade trade = 1;
+    string tradingPair = 2;
+}
+
+// Event produced when a peer marks a swap as failure
+message SwapFailure {
+    Trade trade = 1;
+    string tradingPair = 2;
+}
+
+// Event from rented channel
+message RentedChannelEvent {
+    oneof value {
+        ChannelOpened channelOpened = 1; // when the channel is actually opened and ready to be used
+        ChannelExpiringSoon channelExpiringSoon = 2; // when the channel is close to expire, there needs ot be a way to increase its life
+        ChannelClosed channelClosed = 3; // when the channel is actually closed
+    }
+
+    message ChannelOpened {
+        string channelId = 1; // The channel id
+        int64 expiresOn = 2; // The timestamp when the channel will be closed expressed in seconds.
+        int64 openedOn = 3;// The channel id
+    }
+
+    message ChannelExpiringSoon {
+        string channelId = 1;
+        int64 expiresOn = 2;
+    }
+
+    message ChannelClosed {
+        string channelId =1;
+    }
+}
+
+// This event is sent to all connected peers when a server maintenance is started and to all new peers when they
+// connect during a server maintenance
+message MaintenanceInProgress { }
+
+// This event is sent to all connected peers when a server maintenance is over
+message MaintenanceCompleted { }

@@ -68,12 +68,14 @@ const StyledArrowRight = styled(ArrowRight)`
     left: 9px;
 `
 
-export default function BigSwapArrow({ onPress }: { onPress: () => void }) {
+export default function BigSwapArrow({ onPress, disabled }: { onPress: () => void, disabled?: boolean }) {
   const [rotations, setRotations] = useState(0)
 
   const handlePress = () => {
-    onPress()
-    setRotations(rotations + 1)
+    if (!disabled) {
+      onPress()
+      setRotations(rotations + 1)
+    }
   }
 
   return (

@@ -342,6 +342,9 @@ export default function Header() {
           <StyledNavLink id={`stake-nav-link`} to={'/wallet'}>
             Wallet
           </StyledNavLink>
+          <StyledNavLink id={`stake-nav-link`} to={'/liquidity-pool'}>
+            LiquidityPool
+          </StyledNavLink>
           <StyledExternalLink id={`stake-nav-link`} href={'https://uniswap.info'}>
             BTC <span style={{ fontSize: '11px' }}>↗</span>
           </StyledExternalLink>

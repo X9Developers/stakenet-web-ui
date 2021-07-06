@@ -27,6 +27,9 @@ repository.
 ```bash
 yarn
 ```
+## Protobuf Information 
+
+To generate the protobuf models you must Run `./generate-protos.sh`
 
 ### Run
 

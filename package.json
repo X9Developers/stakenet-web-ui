@@ -127,8 +127,12 @@
   },
   "license": "GPL-3.0-or-later",
   "dependencies": {
+    "@types/big.js": "^6.1.1",
     "@uniswap/default-token-list": "^2.0.0",
+    "big.js": "^6.1.1",
     "bip39": "^3.0.4",
-    "browser-passworder": "^2.0.3"
+    "browser-passworder": "^2.0.3",
+    "google-protobuf": "^3.17.3",
+    "ts-protoc-gen": "^0.15.0"
   }
 }

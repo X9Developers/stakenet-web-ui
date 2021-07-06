@@ -1,0 +1,550 @@
+syntax = "proto3";
+
+import "models.proto";
+
+package io.stakenet.orderbook.protos;
+
+message CommandFailed {
+    oneof value {
+        string reason = 1; // a text describing why the command failed
+        ServerInMaintenance serverInMaintenance = 2; // this indicates the command was not processed due to a server maintenance
+    }
+}
+
+// Tell the server that you are still connected, this must be sent once per minute,
+// otherwise, the server will terminate the connection.
+//
+// Response:
+// - PingResponse
+message PingCommand {}
+message PingResponse {}
+
+// Tell the server to get the available trading pairs
+//
+// Response:
+// - GetTradingPairsResponse.
+message GetTradingPairsCommand {}
+message GetTradingPairsResponse {
+    repeated TradingPair tradingPairs = 1;
+    bool paysFees = 2; // whether or not the client needs to pay a fee to place orders
+}
+
+// Tell the server that you are willing to get updates for the given trading pair,
+// the server will start sending you events related to the trading pair, like:
+// - OrderPlaced
+// - OrderCanceled
+// - OrdersMatched
+//
+// Response:
+// - SubscribeResponse.
+message SubscribeCommand {
+    string tradingPair = 1;
+    bool retrieveOrdersSummary = 2; // if true, the SubscribeResponse will contain the open orders summary. This will ensure that you won't loss any order
+}
+// Event confirming that you got subscribed to a trading pair.
+message SubscribeResponse {
+    string tradingPair = 1;
+    repeated OrderSummary summaryBids = 2;
+    repeated OrderSummary summaryAsks = 3;
+}
+
+
+// Tell the server that you are willing to stop getting updates for the given trading pair,
+// the server will not send you anything related to the trading pair after the Unsubscribed event.
+//
+// Response:
+// - UnsubscribeResponse
+message UnsubscribeCommand {
+    string tradingPair = 1;
+}
+// Event confirming that you got unsubscribed from a trading pair.
+message UnsubscribeResponse {
+    string tradingPair = 1;
+}
+
+
+// Tell the server to get the open orders view.
+//
+// Response:
+// - GetOpenOrdersResponse
+message GetOpenOrdersCommand {
+    string tradingPair = 1;
+}
+// Event specifying that the server got a copy of the open trading orders for you.
+message GetOpenOrdersResponse {
+    string tradingPair = 1;
+    // the initial version used to return an inefficient view
+    reserved 2;
+    reserved "bids";
+    // the initial version used to return an inefficient view
+    reserved 3;
+    reserved "asks";
+    repeated OrderSummary summaryBids = 4;
+    repeated OrderSummary summaryAsks = 5;
+}
+
+
+// Tell the server to find the historic trades.
+//
+// The trades are sorted from oldest to newest, returning no more trades than the given limit.
+// If you already know some trades, you can send the id of the latest one to get the trades
+// that occurred after that one.
+//
+// Response:
+// - GetHistoricTradesResponse
+message GetHistoricTradesCommand {
+    int32 limit = 1;
+    string lastSeenTradeId = 2;
+    string tradingPair = 3;
+}
+// Event specifying that the server got a copy of the historic trades for you.
+message GetHistoricTradesResponse {
+    repeated Trade trades = 1;
+}
+
+
+// Tell the server to find the historic trade prices.
+//
+// Returns the datetime, high, low, open, close prices and volume.
+//
+// Response:
+// - GetBarsPricesResponse
+message GetBarsPricesCommand {
+    string tradingPair = 1; // The trading pair
+    string resolution = 2; // The resolution for example: 'D', '2W', '3D', 'Y
+    int64 from = 3; // The range start date in seconds
+    int64 to = 4; // The range end date in seconds
+    int32 limit = 5; // The limit of results
+}
+// Event for GetBarsPrices command
+// Event specifying the data for the graph
+message GetBarsPricesResponse {
+    repeated BarPrices barPrices = 1;
+}
+
+
+
+
+// Tell the server that you are willing to place an order into the orderbook.
+//
+// Response:
+// - PlaceOrderResponse
+message PlaceOrderCommand {
+    Order order = 1;
+    bytes paymentHash = 2; // the 32 bytes raw payment_hash paying the invoice for the fee, included only when a fee is required
+}
+message PlaceOrderResponse {
+    oneof value {
+        MyOrderPlaced myOrderPlaced = 1;
+        MyOrderRejected myOrderRejected = 2;
+        MyOrderMatched myOrderMatched = 3;
+    }
+
+    // Event specifying that your orders was placed successfully and it will be kept in the orderbook.
+    //
+    // NOTE: Only limit orders are kept in the orderbook.
+    message MyOrderPlaced {
+        Order order = 1;
+    }
+
+    // Event specifying that your command to place an order was rejected, one example is
+    // when placing a market orders when there aren't orders to match it against.
+    message MyOrderRejected {
+        string reason = 1;
+    }
+
+    // Event specifying that one of your orders was matched to another one.
+    message MyOrderMatched {
+        Trade trade = 1;
+        Order orderMatchedWith = 2; // The order which my order was matched
+    }
+}
+
+
+// Tell the server to get the order details from the given Id,
+//
+// Response:
+// - GetOpenOrderByIdResponse event.
+message GetOpenOrderByIdCommand {
+    string orderId = 1;
+}
+// Event for GetTradingOrderById command
+// Event specifying the order retrieved by id
+// if the order does not exist, the order will be null
+message GetOpenOrderByIdResponse {
+    Order order = 1;
+}
+
+
+// Tell the server that you want to cancel one of your open orders
+//
+// Response:
+// - CancelOpenOrderResponse
+message CancelOpenOrderCommand {
+    string orderId = 1;
+}
+// Event for CancelOrder command
+message CancelOpenOrderResponse {
+    Order order = 1;
+}
+
+
+// Tell the server to send a message to the peer that has been matched to one of your orders.
+//
+// This is available only after your order gets matched to another order, then, you'll be able
+// to exchange messages with that peer, it can send you messages using this approach.
+//
+// NOTE: Be careful because the peer is free to send you anything for now.
+//
+// Response:
+// - SendOrderMessageResponse event.
+message SendOrderMessageCommand {
+    string orderId = 1;
+    bytes message = 2;
+}
+// Event for SendOrderMessage command
+message SendOrderMessageResponse {
+    oneof value {
+        OrderMessageSent orderMessageSent = 1;
+        MatchedOrderNotFound MatchedOrderNotFound = 2;
+    }
+
+    // Event produced after sending a message to a matched order
+    message OrderMessageSent {
+        string orderId = 1;
+    }
+}
+
+// Tell the server to cancel an order that was previously matched, this triggers that both
+// orders involved in the match are canceled which produces a [[MatchedOrderCanceled]] event
+// for each peer involved in the match.
+//
+// This command doesn't trigger any notification to the trading pair subscribers on purpose,
+// the subscribers stop being interested in these orders after they were matched, and they'll get
+// interested again if one of those orders is placed again.
+//
+// Response:
+// - CancelMatchedOrderResponse event
+message CancelMatchedOrderCommand {
+    string orderId = 1;
+}
+// Event for CancelMatchedOrder command
+message CancelMatchedOrderResponse {
+    Trade trade = 1;
+}
+
+// Event produced after trying to cancel an unknown matched order
+message MatchedOrderNotFound {
+    string orderId = 1;
+}
+
+// Tell the server to remove all my orders from one trading pair
+// -Response CleanTradingPairOrdersResponse
+message CleanTradingPairOrdersCommand {
+    string tradingPair = 1;
+}
+
+// Event produced after removed all my orders from one trading pair
+message CleanTradingPairOrdersResponse {
+    string tradingPair = 1;
+    repeated string openOrdersRemoved = 2; // A list which contains the ids of the removed open orders
+    repeated string matchedOrdersRemoved = 3; // A list which contains the ids of the removed matched orders
+
+}
+
+// Ask the server to generate an lnd payment invoice which can be used to pay order fees
+// - Response is GetLndPaymentInvoiceResponse
+message GetLndPaymentInvoiceCommand {
+    string currency = 1; // the currency to pay with
+    BigInteger amount = 2; // the amount of satoshis to pay
+}
+// Event for GetLndPaymentInvoiceCommand
+message GetLndPaymentInvoiceResponse {
+    string currency = 1; // The currency on which you will pay fees
+    string paymentRequest = 2; // The payment request, empty when noFeeRequired is true
+    bool noFeeRequired = 3; // true when no fees is required to place the given order
+}
+
+// The command to create an invoice to pay the channel rental
+message GenerateInvoiceToRentChannelCommand {
+    string currency = 1; // the currency where the hub will open a channel to the wallet
+    string payingCurrency = 2; // the currency available on the wallet to pay the funds
+    BigInteger capacity = 3; // the amount to rent on the channel in satoshis
+    int64 lifetimeSeconds = 4; // the amount of seconds the channel will stay active
+}
+// Event for GenerateInvoiceToRentChannelCommand
+message GenerateInvoiceToRentChannelResponse {
+    string currency = 1; // the currency where the hub will open a channel to the wallet
+    string payingCurrency = 2; // the currency available on the wallet to pay the fee
+    BigInteger capacity = 3; // the amount to rent on the channel in satoshis expressed in currency (1)
+    int64 lifetimeSeconds = 4; // the amount of seconds the channel will stay active
+    string paymentRequest = 5;  // A bare-bones invoice for a payment within the Lightning Network. With the details of the invoice, the sender has all the data necessary to send a payment to the recipient.
+}
+
+// The command to create an invoice to pay the channel rental
+message GeneratePaymentHashToRentChannelCommand {
+    string currency = 1; // the currency where the hub will open a channel to the wallet
+    string payingCurrency = 2; // the currency available on the wallet to pay the funds
+    BigInteger capacity = 3; // the amount to rent on the channel in satoshis
+    int64 lifetimeSeconds = 4; // the amount of seconds the channel will stay active
+}
+// Event for GenerateInvoiceToRentChannelCommand
+message GeneratePaymentHashToRentChannelResponse {
+    string currency = 1; // the currency where the hub will open a channel to the wallet
+    string payingCurrency = 2; // the currency available on the wallet to pay the fee
+    BigInteger capacity = 3; // the amount to rent on the channel in satoshis expressed in currency (1)
+    int64 lifetimeSeconds = 4; // the amount of seconds the channel will stay active
+    bytes paymentHash = 5;  // the payment hash that the client can use to pay the fee
+}
+
+
+// Ask the server to create a channel with a given node
+// The channel details are stored with GenerateInvoiceToRentChannelCommand
+// - Response is RentChannelResponse
+message RentChannelCommand {
+    // first iteration of this command included bytes nodePublicKey = 3 as a parameter but now users need to register
+    // their public keys before renting channels and the orderbook will use the registered key when opening a channel
+    // to the user so this parameter is not longer necessary
+    reserved 3;
+    reserved "nodePublicKey";
+
+    bytes paymentHash = 1; // The 32 bytes raw payment_hash paying the invoice for the fee.
+    string payingCurrency = 2; // The currency where you paid the fee
+}
+// Event for RentChannelCommand
+message RentChannelResponse {
+    bytes paymentHash = 1; // The 32 bytes raw payment_hash paying the invoice for the fee.
+    bytes nodePublicKey = 2; // the wallet's public key to open the channel
+    string channelId = 3; // the id generated by orderbook
+    bytes fundingTransaction = 4; // the funding transaction
+    int32 outputIndex = 5; // the output index
+    string fundingTxidStr = 6; // the hex string funding transaction id
+    RentedChannel channel = 7; // the rented channel's information
+}
+
+// Command to know the status of a channel.
+message GetChannelStatusCommand {
+    string channelId = 1; // The channel id
+}
+// Event for GetChannelStatusCommand
+message GetChannelStatusResponse {
+    string channelId = 1; // The channel id
+    string status = 2; // The status, OPENING - ACTIVE - CLOSED
+    int64 expiresAt = 3; // The timestamp when the channel will be closed
+    string closingType = 4; // The closing type as reported by lnd
+    string closedBy = 5; // Who closed the channel as reported by lnd
+    int64 closedOn = 6; // A timestamp of when the orderbook noticed the channel was closed
+}
+
+// The command to calculate the fee to rent a channel
+message GetFeeToRentChannelCommand {
+    string currency = 1; // the currency where the hub will open a channel to the wallet
+    string payingCurrency = 2; // the currency available on the wallet to pay the funds
+    BigInteger capacity = 3; // the amount to rent on the channel in satoshis
+    int64 lifetimeSeconds = 4; // the amount of seconds the channel will stay active
+}
+// Event for GetFeeToRentChannelCommand
+message GetFeeToRentChannelResponse {
+    BigInteger fee = 1; // the fee that the user has to pay to rent the channel, this should be equal to rentingFee + onChainFees
+    BigInteger rentingFee = 2; // this fee covers the time the user will rent the channel plus the time it takes to force close the channel
+    BigInteger onChainFees = 3; // this fee is used to pay the opening and closing transaction fees for the channel
+}
+
+// Tell the server you want to be refunded a fee that you paid but all of it has not been burned yet, eg.
+// You pay a fee of 100 satoshis but 30 satoshis have already been burned in trades you made so
+// you can be refunded for the 70 satoshis remaining
+// - Response is RefundFeeResponse
+message RefundFeeCommand {
+    // first iteration of this command included BigInteger amount = 3 as a parameter but since that can be read
+    // from the paymentRequest it was removed.
+    reserved 3;
+    reserved "amount";
+
+    string paymentRequest = 1; // The invoice the orderbook has to pay in order to refund the fee
+    string currency = 2; // The currency in which the fee being refunded was paid
+    // This was deprecated in favor of refundedFees and is ignored when refundedFees is provided
+    bytes refundedPaymentHash = 4; // The payment hash of the fee that is being refunded
+    repeated RefundablePayment refundedFees = 5; // List of the fees that are being refunded
+}
+
+// Event for RefundFeeCommand
+message RefundFeeResponse {
+    // Now we are allowing to refund multiple fees on the same invoice so this was replaced by
+    // refundedFees
+    reserved 4;
+    reserved "refundedPaymentHash";
+
+    string paymentRequest = 1; // The invoice the orderbook paid to refund the fee
+    string currency = 2; // The currency in which the refunded fee was paid(and refunded)
+    BigInteger amount = 3; // The refunded amount
+    int64 refundedOn = 5; // The timestamp when the fee was refunded
+    repeated RefundablePayment refundedFees = 6; // List of the fees that were refunded
+}
+
+// The command to get the refundable amount for a given payment_hash
+message GetRefundableAmountCommand {
+    string currency = 1;
+    bytes paymentHash = 2; // The 32 bytes raw payment_hash that has been paid (deprecated). Ignored when the refundablePayments are provided.
+    repeated RefundablePayment refundablePayments = 3; // The list of refundable payment
+}
+//  Event for GetRefundableAmountCommand
+message GetRefundableAmountResponse {
+
+    // This is deprecated because the GetRefundableAmountCommand must receive a list of payment hash.
+    reserved "paymentHash"; // The 32 bytes raw payment_hash that has been paid.(deprecated).
+    reserved 2;
+
+    string currency = 1;
+    BigInteger amount = 3; // The refundable amount
+}
+
+// The command to create an invoice to pay for an extension of a rented channel duration
+// - The channel should have at least 10 minutes remaining before it expires
+// - The channel should have an ACTIVE status for this to work
+message GenerateInvoiceToExtendRentedChannelCommand {
+    string channelId = 1; // id of the channel of which its lifetime will be increased
+    string payingCurrency = 2; // the currency available on the wallet to pay the funds
+    int64 lifetimeSeconds = 3; // the amount of seconds the channel duration will be increased
+}
+// Event for GenerateInvoiceToExtendChannelRentCommand
+message GenerateInvoiceToExtendRentedChannelResponse {
+    string channelId = 1; // id of the channel of which its lifetime will be increased
+    string payingCurrency = 2; // the currency available on the wallet to pay the fee
+    int64 lifetimeSeconds = 3; // the amount of seconds the channel duration will be increased
+    string paymentRequest = 4;  // A bare-bones invoice for a payment within the Lightning Network. With the details of the invoice, the sender has all the data necessary to send a payment to the recipient.
+}
+
+// The command to calculate the fee to extend the rent time of an existing channel
+message GetFeeToExtendRentedChannelCommand {
+    string channelId = 1; // id of the channel of which its lifetime will be increased
+    string payingCurrency = 2; // currency with which the fee will be paid
+    int64 lifetimeSeconds = 3; // amount of seconds to add to the channel lifetime
+}
+// Event for GetFeeToExtendChannelRentCommand
+message GetFeeToExtendRentedChannelResponse {
+    BigInteger fee = 1; // the fee to pay in satoshis
+}
+
+// Ask the server to extend the rent time of an existing channel
+// - Response is RentChannelResponse
+message ExtendRentedChannelTimeCommand {
+    bytes paymentHash = 1; // The 32 bytes raw payment_hash paying the invoice for the fee.
+    string payingCurrency = 2; // The currency where you paid the fee
+}
+// Event for ExtendChannelRentTimeCommand
+message ExtendRentedChannelTimeResponse {
+    bytes paymentHash = 1; // The 32 bytes raw payment_hash paying the invoice for the fee.
+    string channelId = 2; // the id of the channel
+    int64 expiresAt = 3; // The updated duration for the channel
+}
+
+// Register the given currency's lnd public key, users can only have one key per currency so
+// this command will fail if the user has previously registered another key for that currency
+// or other user already has that key registered
+message RegisterPublicKeyCommand {
+    string currency = 1; // The currency for which you want to register a key
+    bytes publicKey = 2; // the lnd node public key
+}
+
+// Response for a successful RegisterPublicKeyCommand
+message RegisterPublicKeyResponse {
+    string currency = 1; // The currency for which the key was registered
+    bytes publicKey = 2; // the lnd node public key
+}
+
+// Register the given currency's connext public identifier, users can only have one identifier per currency so
+// this command will fail if the user has previously registered another identifier for that currency
+// or other user already has that identifier registered
+message RegisterPublicIdentifierCommand {
+    string currency = 1; // The currency for which you want to register an identifier
+    string publicIdentifier = 2; // the connext node public identifier
+}
+
+// Response for a successful RegisterPublicIdentifierCommand
+message RegisterPublicIdentifierResponse {
+    string currency = 1; // The currency for which the identifier was registered
+    string publicIdentifier = 2; // the connext node public identifier
+}
+
+// Ask the server to generate an payment hash that the client can use to make the fee payment
+// this is used for connext currencies instead of GetLndPaymentInvoiceCommand
+// - Response is GetConnextPaymentInformationResponse
+message GetConnextPaymentInformationCommand {
+    string currency = 1; // the currency to pay with
+}
+
+// Event for GetConnextPaymentInformationCommand
+message GetConnextPaymentInformationResponse {
+    string currency = 1; // The currency on which you will pay fees
+    string publicIdentifier = 2; // The public identifier of the node that will be receiving the payment, empty when noFeeRequired is true?
+    bytes paymentHash = 3; // The hash of the preimage that unlocks the payment
+    bool noFeeRequired = 4; // true when no fee is required to place the given order
+}
+
+// Adds the client to the requested liquidity pool
+// For a client to join a liquidity pool he needs to open two channels(one for the primary currency and one for the secondary currency) to
+// the hub to lock the funds he will be committing to the liquidity pool, the balances on those channels should have the same ratio as the
+// current liquidity pool balances otherwise the command will fail
+message JoinLiquidityPoolCommand {
+    string tradingPair = 1; // the liquidity pool that the client wants to join
+    string principalChannelIdentifier = 2; // the channel identifier for the channel where the client locked its funds for the primary currency of the pool
+    string secondaryChannelIdentifier = 3; // the channel identifier for the channel where the client locked its funds for the secondary currency of the pool
+}
+
+// Response for a successful JoinLiquidityPoolCommand
+message JoinLiquidityPoolResponse {
+    string tradingPair = 1; // the liquidity pool that the client joined
+    string principalChannelIdentifier = 2; // the channel identifier for the channel where the client locked its funds for the primary currency of the pool
+    string hubPrincipalChannelIdentifier = 3; // the channel identifier for the channel the hub opened back to the client for the primary currency of the pool
+    string secondaryChannelIdentifier = 4; // the channel identifier for the channel where the client locked its funds for the secondary currency of the pool
+    string hubSecondaryChannelIdentifier = 5; // the channel identifier for the channel the hub opened back to the client for the secondary currency of the pool
+}
+
+// Gets the amount of funds the client needs to lock to join the requested liquidity pool based on the amount he will lock
+// for one of the currencies
+message GetLiquidityPoolContributionCommand {
+    string tradingPair = 1; // the liquidity pool for which the needed contribution will be calculated
+    string currency = 2; // currency of the locked funds
+    BigInteger amount = 3; // amount of funds locked for one of the liquidity pool currencies
+}
+
+// Response for a successful GetLiquidityPoolContributionCommand
+message GetLiquidityPoolContributionResponse {
+    string tradingPair = 1; // the liquidity pool for which the needed locked amount was calculated
+    string currency = 2; // currency of the funds that need to be locked
+    BigInteger amount = 3; // amount that needs to be locked to join the liquidity pool
+}
+
+// Calculates a trade against the liquidity pool
+message CalculateTradeCommand {
+    string tradingPair = 1; // the liquidity pool for which the needed contribution will be calculated
+    string currency = 2; // currency of the locked funds
+    BigInteger amount = 3; // amount of funds locked for one of the liquidity pool currencies
+    SendingSide side = 4; // who is sending the initial amount which will be used to calculate how much the other side has to send for the trade
+
+}
+
+// Response for a successful CalculateTradeCommand
+message CalculateTradeResponse {
+    BigInteger clientAmount = 1; // the amount the client will send to the liquidity pool
+    string clientCurrency = 2; // currency the client is selling to the liquidity pool
+    BigInteger poolAmount = 3; // the amount the pool will send to the client
+    string poolCurrency = 4; // the currency the client is buying from the liquidity pool
+    BigInteger price = 5; // the price the liquidity pool is selling to the client
+}
+
+message TradeCommand {
+    BigInteger clientAmount = 1; // the amount the client will send to the liquidity pool
+    string clientCurrency = 2; // currency the client is selling to the liquidity pool
+    BigInteger poolAmount = 3; // the amount the pool will send to the client
+    string poolCurrency = 4; // the currency the client is buying from the liquidity pool
+    BigInteger price = 5; // the price the liquidity pool is selling to the client
+}
+
+message TradeResponse {
+    BigInteger clientAmount = 1; // the amount the client sent to the liquidity pool
+    string clientCurrency = 2; // currency that the client sold to the liquidity pool
+    BigInteger poolAmount = 3; // the amount the pool sent to the client
+    string poolCurrency = 4; // the currency that the client bought from the liquidity pool
+    BigInteger price = 5; // the price at which the liquidity pool sold to the client
+}

@@ -100,7 +100,7 @@ export default function RestoreWallet() {
           <FormColumn>
             <InputField
               type="password"
-              placeholder="password"
+              placeholder="Password"
               autoComplete="off"
               name="password"
               pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"

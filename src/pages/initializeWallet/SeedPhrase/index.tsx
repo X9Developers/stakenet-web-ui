@@ -30,7 +30,7 @@ export default function SeedPhrase() {
       <ContainerSubtitle>Save your secret phrase</ContainerSubtitle>
       <SeedPhraseGrid seedPhrase={userSeedPhrase} />
       <ContainerActions flexDirection={'row'}>
-        <Button onClick={handleClick}>Remeber Later</Button>
+        <Button onClick={handleClick}>Remember Later</Button>
         <StyledLink to={{ pathname: "/wallet/confirm-Seed-phrase" }}>
           <Button >Next</Button>
         </StyledLink>

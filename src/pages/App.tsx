@@ -37,7 +37,6 @@ import RedirectAddWallet from './initializeWallet/AddWallet/redirects';
 import RedirectSeedPhrase from './initializeWallet/SeedPhrase/redirects'
 import RedirectUnlockWallet from './initializeWallet/UnlockWallet/redirects';
 import RedirectRestoreWallet from './initializeWallet/RestoreWallet/redirects';
-// import { LiquidityPool } from './LiquidityPool/index2';
 import { Connext } from './LiquidityPool/connext'
 import { webSocketContext } from './LiquidityPool/webSocketContext';
 import { useWebSocket } from './LiquidityPool/useWebSocket';

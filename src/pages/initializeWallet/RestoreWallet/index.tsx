@@ -76,7 +76,7 @@ export default function RestoreWallet() {
     if (result) {
       return result
     } else if (!acceptTerms) {
-      return "You must Agree Terms & Coditions"
+      return "You must agree to the Terms & Conditions"
     } else if (validatedSeedPhrase) {
       return validatedSeedPhrase
     } else {
@@ -122,7 +122,7 @@ export default function RestoreWallet() {
             />
             <CheckboxContainer>
               <Checkbox type="checkbox" name="acceptTerms" checked={acceptTerms} onChange={handleInputChange} />
-                I Agree Terms & Coditions
+                I agree to the Terms & Conditions
             </CheckboxContainer>
           </FormColumn>
         </FormRow>

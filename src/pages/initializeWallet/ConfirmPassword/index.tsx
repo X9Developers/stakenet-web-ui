@@ -78,7 +78,7 @@ export default function ConfirmPassword() {
             <InputField
               id="password"
               type="password"
-              placeholder="password"
+              placeholder="Password"
               autoComplete="off"
               name="password"
               value={password}

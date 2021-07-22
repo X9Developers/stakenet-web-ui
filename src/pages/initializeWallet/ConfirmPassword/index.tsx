@@ -59,7 +59,7 @@ export default function ConfirmPassword() {
     if (validationError) {
       return validationError
     } else if (!acceptTerms) {
-      return "You must Agree Terms & Coditions"
+      return "You must agree to the Terms & Conditions"
     } else {
       return ""
     }
@@ -95,7 +95,7 @@ export default function ConfirmPassword() {
             />
             <CheckboxContainer>
               <Checkbox type="checkbox" name="acceptTerms" checked={acceptTerms} onChange={handleInputChange} />
-                I Agree Terms & Coditions
+                I agree to the Terms & Conditions
             </CheckboxContainer>
             {(error) ? (<ErrorDiv width="250px"> {error} </ErrorDiv>) : ''}
           </FormColumn>

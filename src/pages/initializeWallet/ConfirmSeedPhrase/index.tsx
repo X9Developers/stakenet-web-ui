@@ -51,7 +51,7 @@ export default function ConfirmSeedPhrase() {
     if (validationError) {
       return validationError
     } else if (!checkSeedPhrase(seedPhrase)) {
-      return 'The seedPhrase is not correct'
+      return 'The seed phrase is not correct'
     } else {
       return '';
     }

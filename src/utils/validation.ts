@@ -9,9 +9,9 @@ export const validatePasswords = (password: string, confirmPassword: string) => 
   if (!password) {
     return "The password can't be empty"
   } else if (!isPassword(password)) {
-    return "Password must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters"
+    return "Password must contain at least one number, one uppercase and lowercase letter, and at least 8 or more characters"
   } else if (password !== confirmPassword) {
-    return "The passwords must be equals"
+    return "The passwords must match"
   } else {
     return ""
   }
@@ -20,11 +20,11 @@ export const validatePasswords = (password: string, confirmPassword: string) => 
 export const validateSeedPhrase = (inputWords: string[]) => {
   const seedPhrase = inputWords.join(' ')
   if (inputWords.every(element => !element)) {
-    return "The input word can't be empty"
+    return "Please enter your seed phrase"
   } else if (!inputWords.every(element => /^[a-zA-Z]+$/.test(element))) {
-    return 'The input words need to be letters'
+    return 'The seed phrase words need to be made up of letters'
   } else if (!isValidateMnemonic(seedPhrase)) {
-    return 'The seedPhrase is not valid'
+    return 'The seed phrase is not valid'
   } else {
     return '';
   }

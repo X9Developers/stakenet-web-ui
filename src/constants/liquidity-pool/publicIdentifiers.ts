@@ -1,0 +1,1 @@
+export const HUB_PUBLIC_IDENTIFIER = "vector8hTh6dnPvnBXKSank5skxURBr14H6sHCHp43SaKax9k7odTmHX"

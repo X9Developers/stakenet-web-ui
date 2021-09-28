@@ -127,6 +127,7 @@
   },
   "license": "GPL-3.0-or-later",
   "dependencies": {
+    "@connext/vector-browser-node": "0.2.5-beta.18",
     "@types/big.js": "^6.1.1",
     "@uniswap/default-token-list": "^2.0.0",
     "big.js": "^6.1.1",

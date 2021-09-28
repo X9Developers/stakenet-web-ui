@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package io.stakenet.lssd.protos;
+
+message SwapRequestPacketBody {
+    int64 proposedQuantity = 1;
+    string pairId = 2;
+    string orderId = 3;
+    string rHash = 4;
+    uint32 takerCltvDelta = 5;
+    string takerDestination = 6;
+}
+
+message SwapFailedPacketBody {
+    string rHash = 1;
+    uint32 failureReason = 2;
+    string errorMessage = 3;
+}
+
+message SwapCompletePacketBody {
+    string rHash = 1;
+}
+
+message SwapAcceptedPacketBody {
+    string rHash = 1;
+    /** Specifies the accepted quantity (which may be less than the proposed quantity). */
+    int64 quantity = 2;
+    /** The CLTV delta from the current height that should be used to set the timelock for the final hop when sending to maker. */
+    uint32 makerCltvDelta = 3;
+    string makerDestination = 4;
+    string makerPaymentRequest = 5;
+}
+
+message InvoiceExchangePacketBody {
+    string rHash = 1;
+    string takerPaymentRequest = 2;
+}
+
+message InvoiceExchangeAckPacketBody {
+    string rHash = 1;
+}
+
+message SanitySwapInitPacketBody {
+    string currency = 1;
+    string rHash = 2;
+}
+
+message SanitySwapAckPacketBody {
+
+}
+
+message Packet {
+    oneof swap {
+        SwapRequestPacketBody req = 1;
+        SwapFailedPacketBody fail = 2;
+        SwapCompletePacketBody complete = 3;
+        SwapAcceptedPacketBody accepted = 4;
+        InvoiceExchangePacketBody invoice_exchange = 5;
+        InvoiceExchangeAckPacketBody exchange_ack = 6;
+    }
+    oneof sanity {
+        SanitySwapInitPacketBody init = 7;
+        SanitySwapAckPacketBody ack = 8;
+    }
+}

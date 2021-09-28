@@ -303,3 +303,85 @@ export const LogoInputCurrency = styled.img <{ height?: string, width?: string }
   height:${({ height }) => (height) ? height : '40px'};
   width: ${({ width }) => (width) ? width : '40px'};
 `
+
+export const TextLabel = styled.div`
+  background-color: black;
+  border: none;
+  color: #6C7284;
+  padding: 15px 15px;
+  border: 1px solid transparent;
+  opacity: 1;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 14px;
+  font-weight: 400;
+  margin: 4px 2px;
+  overflow: hidden;
+`
+
+export const MenuFlyout = styled.span`
+  min-width: 20.125rem;
+  background-color: ${({ theme }) => theme.bg2};
+  box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.01), 0px 4px 8px rgba(0, 0, 0, 0.04), 0px 16px 24px rgba(0, 0, 0, 0.04),
+    0px 24px 32px rgba(0, 0, 0, 0.01);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  font-size: 1rem;
+  position: absolute;
+  top: 3rem;
+  right: 0rem;
+  z-index: 100;
+
+  ${({ theme }) => theme.mediaWidth.upToMedium`
+    min-width: 18.125rem;
+  `};
+`
+
+
+export const MenuItem = styled.div`
+  flex: 1;
+  padding: 0.5rem 0.5rem;
+  color: ${({ theme }) => theme.text2};
+  :hover {
+    color: ${({ theme }) => theme.text1};
+    cursor: pointer;
+  }
+  > svg {
+    margin-right: 8px;
+  }
+`
+
+export const MenuLinkItem = styled.a`
+  flex: 1;
+  padding: 18px;
+  color: ${({ theme }) => theme.text1};
+  background-color: ${({ theme }) => theme.bg4};
+  text-align: center;
+  text-decoration: none;
+  color: ${({ theme }) => theme.text2};
+  :hover {
+    color: ${({ theme }) => theme.text1};
+    cursor: pointer;
+    text-decoration: none;
+  }
+  > svg {
+    margin-right: 8px;
+  }
+`
+
+
+export const ButtonErrorScreen = styled.button`
+  background-color: rgba(21,61,111,0.44);
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  display: inline-block;
+  font-size: 16px;
+  border-radius: 5px;
+  margin: 0 auto;
+  cursor: pointer;
+  width: min-content;
+`

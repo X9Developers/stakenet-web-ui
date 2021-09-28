@@ -14,7 +14,6 @@ interface InputTradingPairsComponentProps {
 export const InputTradingPairsComponent = ({ tradingPairs, handleInputCurrency, tradingPair }: InputTradingPairsComponentProps) => {
 
   const [modalOpen, setModalOpen] = useState(false)
-  // const currentPair: TradingPair = tradingPairs[tradingPair]
 
   const handleDismiss = useCallback(() => {
     setModalOpen(false)
@@ -35,8 +34,8 @@ export const InputTradingPairsComponent = ({ tradingPairs, handleInputCurrency, 
             <Column>
               <AutoRow style={{ gap: '20px' }}>
                 <div>
-                  <LogoInputCurrency src={tradingPair.principalCurrency.urlIcon} alt={""} width={'30px'} height={'30px'} />
-                  <LogoInputCurrency src={tradingPair.secondaryCurrency.urlIcon} alt={""} width={'30px'} height={'30px'} />
+                  <LogoInputCurrency src={tradingPair.principalCurrency.logo!} alt={""} width={'30px'} height={'30px'} />
+                  <LogoInputCurrency src={tradingPair.secondaryCurrency.logo!} alt={""} width={'30px'} height={'30px'} />
                 </div>
                 <div >{tradingPairsStr(tradingPair)}</div>
               </AutoRow>

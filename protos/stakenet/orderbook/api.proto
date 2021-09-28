@@ -1,7 +1,7 @@
 syntax = "proto3";
 
-import "commands.proto";
-import "events.proto";
+import "stakenet/orderbook/commands.proto";
+import "stakenet/orderbook/events.proto";
 
 package io.stakenet.orderbook.protos;
 

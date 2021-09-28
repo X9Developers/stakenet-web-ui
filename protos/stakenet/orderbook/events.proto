@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-import "models.proto";
+import "stakenet/orderbook/models.proto";
 
 package io.stakenet.orderbook.protos;
 

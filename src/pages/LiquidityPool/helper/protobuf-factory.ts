@@ -39,7 +39,7 @@ export const ProtobufFactory = {
     return command;
   },
 
-  createTrade: (clientAmount: BigInteger, clientCurrency: string, poolAmount: BigInteger, poolCurrency: string, price: BigInteger): Command => {
+  createTrade: (clientAmount: BigInteger, clientCurrency: string, poolAmount: BigInteger, poolCurrency: string, fee: BigInteger, transferId: string): Command => {
     const command = new Command();
     command.setClientmessageid(Uuid.from());
     const message = new Commands.TradeCommand();
@@ -47,8 +47,19 @@ export const ProtobufFactory = {
     message.setClientcurrency(clientCurrency);
     message.setPoolamount(poolAmount);
     message.setPoolcurrency(poolCurrency);
-    message.setPrice(price);
+    message.setFee(fee);
+    message.setTransferid(transferId)
     command.setTradecommand(message);
+    return command;
+  },
+
+  createConfirmTrade: (tradeId: string, transferId: string): Command => {
+    const command = new Command();
+    command.setClientmessageid(Uuid.from());
+    const message = new Commands.ConfirmTrade();
+    message.setTradeid(tradeId);
+    message.setTransferid(transferId);
+    command.setConfirmtrade(message);
     return command;
   }
 };

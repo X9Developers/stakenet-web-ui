@@ -7,27 +7,44 @@ import BigSwapArrow from 'components/swap/BigSwapArrow';
 import { SwapBottomSectionFiller } from '../../components/SwapWrappers/index';
 import { ButtonLight } from 'components/Button';
 import { InputCurrencyComponent } from './inputCurrencyComponent';
-import { createCalculateTrade, promiseTimeout } from './liquidityPoolApi';
-import { useWebSocket } from './useWebSocket';
-import { CalculateTradeResponse } from 'models/protos/commands_pb';
+import { createCalculateTrade, promiseTimeout, createTrade, createConfirmTrade, getTradingPairs, awaitForTradeCompleted } from './liquidityPoolApi';
+import { useWebSocket, webSocketObject } from './useWebSocket';
+import { CalculateTradeResponse, ConfirmTradeResponse } from 'models/protos/commands_pb';
 import useDebounce from '../../hooks/useDebounce';
 import { SendingSide } from '../../models/protos/models_pb';
-import { IndependentFieldMap, setIndependetField, setInputCurrency, setInputCurrencyAmount, setOutputCurrency, setOutputCurrencyAmount, setTradingPair } from 'state/connext/actions';
+import { IndependentFieldMap, setFee, setIndependetField, setInputCurrency, setInputCurrencyAmount, setOutputCurrency, setOutputCurrencyAmount, setTradingPair } from 'state/connext/actions';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, AppState } from 'state';
 import { SwapTradingPair } from 'state/connext/reducer';
-import { toSatoshiWithPrecision, satoshiToValueWithPrecision } from 'utils/satoshi';
+import { toSatoshiWithPrecision } from 'utils/satoshi';
 import { useWalletModalToggle } from 'state/application/hooks';
 import { InputTradingPairsComponent } from './inputTradingPairsComponent';
-import { DEFAULT_TRADING_PAIR, PROMISE_MAX_TIMEOUT, TradingPair, tradingPairsStr, TRADING_PAIRS } from 'constants/liquidity-pool/tradingPairs';
+import { COMPLETED_TRADE_MAX_TIMEOUT, DEFAULT_TRADING_PAIR, PROMISE_MAX_TIMEOUT, TradingPair, tradingPairsStr, TRADING_PAIRS } from 'constants/liquidity-pool/tradingPairs';
 import { switchCurrencies } from '../../state/connext/actions';
 import { getUsdEquivalent } from 'utils/usdPrice';
-import { removeDecimalTrailingZeroes } from 'utils/FormatterNumber';
+import { useActiveWeb3React } from 'hooks';
+import { ConfirmInterchangeComponent } from './confirmInterchangeComponent';
+import { LoadingScreenComponent, LoadingScreenComponentProps } from './loadingScreenComponent';
+import { ActionsConnext } from '../../constants/liquidity-pool/tradingPairs';
+import { CustomBrowserNode } from 'services/customBrowserNode/customBrowserNode';
+import { SettingsTab } from './settingsTab';
+import { BigNumber } from 'ethers';
+import { newBigInteger } from './helper/protobuf-factory';
+import { TradeResponse, GetTradingPairsResponse } from '../../models/protos/commands_pb';
+import { createTransferLoader, depositLoader, resolveTransferLoader } from 'constants/liquidity-pool/loadingMessagges';
+import { ERROR_STATES, resetConnextError } from 'constants/liquidity-pool/connextErrors';
+import { SuccessScreenModal } from './succesScreenModal';
+import { handlePendingTransfer, initCustomBrowserNode } from './useConnext';
+import { resetLoader } from '../../constants/liquidity-pool/loadingMessagges';
+import { HandleErrorComponent } from './handleErrorComponent';
+import { createCustomWebSocket } from './createCustomWebSocket';
+import { parseUnits, formatUnits } from 'ethers/lib/utils';
+import Big from 'big.js';
 
 export const Connext = () => {
 
   const dispatch = useDispatch<AppDispatch>()
-  const { independentField, inputCurrency, outputCurrency, tradingPair }: SwapTradingPair = useSelector((state: AppState) => state.liquidityPool)
+  const { independentField, inputCurrency, outputCurrency, tradingPair, fee }: SwapTradingPair = useSelector((state: AppState) => state.liquidityPool)
   const { currencyToken: inputCurrencyToken, currencyAmount: inputCurrencyAmount } = inputCurrency
   const { currencyToken: outputCurrencyToken, currencyAmount: outputCurrencyAmount } = outputCurrency
   const [price, setPrice] = useState('')
@@ -36,6 +53,21 @@ export const Connext = () => {
   const [typedValueState, setTypedValueState] = useState('')
   const [disabled, setDisabled] = useState(true)
   const typedValueDebounced: string = useDebounce(typedValueState, 500)
+  const [actionConnext, setActionConnext] = useState({
+    action: ActionsConnext.SWAP,
+    updates: 0
+  })
+  const [connextError, setConnextError] = useState(resetConnextError)
+  const [loadingScreen, setLoadingScreen] = useState<LoadingScreenComponentProps>(resetLoader)
+  const [showSuccessScreen, setShowSuccessScreen] = useState(false)
+  const [txHash, setTxHash] = useState("")
+  const [updatePrice, setUpdatePrice] = useState(true)
+  interface savedStateInterface {
+    clientamount: string,
+    poolamount: string,
+    fee: string,
+  }
+  const [savedCalculateTrade, setSavedCalculateTrade] = useState<savedStateInterface | undefined>(undefined)
 
   const priceLabel = (inputTokenName: string, outputTokenName: string, price: string) => {
     const priceLabelTmp = `${price} ${inputTokenName}/${outputTokenName}`
@@ -43,6 +75,8 @@ export const Connext = () => {
   }
 
   const toggleWalletModal = useWalletModalToggle()
+
+  const { account, library } = useActiveWeb3React()
 
   const { webSocketSubject, webSocketListener } = useWebSocket()
 
@@ -54,6 +88,11 @@ export const Connext = () => {
     setInputUsdState('-')
     setOutputUsdState('-')
     setPrice('')
+  }
+
+  const onFinished = (txHash: string, amountUi?: string, amountBn?: BigNumber) => {
+    console.log("On finish ==>", txHash, 'successWithdrawalUi', amountUi, 'withdrawalAmount', amountBn)
+    setTxHash(txHash)
   }
 
   const handleInputCurrencyToken = useCallback((newTradingPair: TradingPair) => {
@@ -69,6 +108,135 @@ export const Connext = () => {
   useEffect(() => {
     handleInputCurrencyToken(TRADING_PAIRS[DEFAULT_TRADING_PAIR])
   }, [handleInputCurrencyToken])
+
+  const [customWebSocket, setCustomWebSocket] = useState<webSocketObject | undefined>(undefined)
+
+
+  const saveCustomWebSocket = useRef(customWebSocket)
+
+  useEffect(() => {
+    if (account) {
+      const walletId = account.replace(/0x/, "")
+      const queryParams = `?walletId=${walletId.toLowerCase()}`
+      setCustomWebSocket(createCustomWebSocket(queryParams))
+    } else {
+      setCustomWebSocket(undefined)
+    }
+    return () => {
+      const ws = saveCustomWebSocket.current
+      if (ws) {
+        ws.webSocketSubject.complete()
+      }
+
+    }
+  }, [account])
+
+  useEffect(() => {
+    saveCustomWebSocket.current = customWebSocket
+  }, [customWebSocket])
+
+
+  const handleConnext = async () => {
+    try {
+      if (!checkForWallet()) {
+        return
+      }
+      const customBrowserNode = await initCustomBrowserNode(
+        inputCurrencyToken,
+        outputCurrencyToken,
+        library!,
+        setLoadingScreen,
+        setConnextError
+      )
+      if (true) {
+        console.log(handleGetPairs)
+      }
+      if (ActionsConnext.SWAP === actionConnext.action) {
+        setUpdatePrice(false)
+        // console.log(handleConnextSwap)
+        const formattedInput = Number(inputCurrencyAmount).toFixed(6)
+        console.log('formattedInput', formattedInput)
+        const transferAmountBn = BigNumber.from(parseUnits(formattedInput, 6)).toString();
+        console.log('transferAmountBn', transferAmountBn)
+        handleConnextSwap(customBrowserNode)
+        setUpdatePrice(true)
+      }
+      if (ActionsConnext.RECOVER === actionConnext.action) {
+        await handlePendingTransfer(customBrowserNode,
+          inputCurrencyToken,
+          outputCurrencyToken,
+          setLoadingScreen,
+          setConnextError,
+          account!,
+          onFinished
+        )
+      }
+    } catch (error) {
+      setUpdatePrice(true)
+      console.log(error)
+    }
+  }
+
+  const checkForWallet = () => {
+    console.log('wallet', account)
+    if (!account) {
+      setConnextError({
+        type: ERROR_STATES.ERROR_WALLET_NOT_FOUND,
+        message: 'You must connect to a wallet before to be able to use the app . Please connect to a wallet first'
+      })
+      return false;
+    }
+    return true
+  }
+
+  const handleConnextSwap = async (customBrowserNode: CustomBrowserNode) => {
+    try {
+      console.log('DEPOSITING')
+      setLoadingScreen(depositLoader)
+      // await customBrowserNode.deposit({
+      //   transferAmount: '2',
+      //   webProvider: library!
+      // })
+      setLoadingScreen(createTransferLoader)
+      console.log('CREATING TRANSFER')
+      const amountToSend = Number(inputCurrencyAmount).toFixed(6)
+      const transferDeets = await customBrowserNode.createConditionalTranfer(amountToSend)
+      console.log('transferDeets', transferDeets)
+      console.log('HANDLING CREATE TRADE')
+      const tradeId = await handleCreateTrade(transferDeets.transferId)
+      await awaitForCompletedTrade()
+      console.log('HANDLING CONFIRM TRADE')
+      handleConfirmTrade(tradeId, transferDeets.transferId)
+      setLoadingScreen(resolveTransferLoader)
+      console.log('RESOLVING TRANSFER')
+      await customBrowserNode.resolveConditionalTransfer(transferDeets.preImage)
+      // console.log('WITHDRAWING')
+      // await customBrowserNode.withdraw({
+      //   recipientAddress: account!,
+      //   onFinished: onFinished
+      // });
+      setLoadingScreen(resetLoader)
+    } catch (error) {
+      console.log(error)
+      setConnextError({
+        type: ERROR_STATES.ERROR_SWAP_FAILED,
+        message: error.message
+      })
+      setLoadingScreen(resetLoader)
+      // throw error
+    }
+  }
+
+  const handleGetPairs = async () => {
+    try {
+      const resp = await handleGetTradingPairs()
+      console.log(resp.tradingpairsList)
+    } catch (error) {
+      console.log(error)
+      setLoadingScreen(resetLoader)
+      throw error
+    }
+  }
 
   const handleInputFieldCurrency = (newInputCurrency: string) => {
     dispatch(setInputCurrencyAmount({ inputCurrencyAmount: newInputCurrency }))
@@ -110,7 +278,7 @@ export const Connext = () => {
     setInputUsdState('')
   }
 
-  const habdleInputCurrency = () => {
+  const handleInputCurrency = () => {
     setDisabled(true)
     setPrice('')
     cleanOutputFields()
@@ -126,19 +294,38 @@ export const Connext = () => {
     calculateOutputCurrency(currencyToken, tradingPairStr, satoshi)
   }
 
+
+  const saveCalculateTrade = (response: CalculateTradeResponse.AsObject) => {
+    setSavedCalculateTrade({
+      clientamount: response.clientamount!.value,
+      poolamount: response.poolamount!.value,
+      fee: response.fee!.value
+    })
+  }
+
   const calculateOutputCurrency = (currencyToken: string, tradingPairStr: string, satoshi: string) => {
     const promise = createCalculateTrade(webSocketSubject, webSocketListener, tradingPairStr, currencyToken, satoshi, SendingSide.CLIENT)
     promiseTimeout(promise, PROMISE_MAX_TIMEOUT).then((response: CalculateTradeResponse.AsObject) => {
-      const amount = removeDecimalTrailingZeroes(satoshiToValueWithPrecision(response.poolamount?.value || '', 2))
-      dispatch(setOutputCurrencyAmount({ outputCurrencyAmount: amount }))
-      const satoshiPrice = response.price?.value || ''
-      const parsedPrice = removeDecimalTrailingZeroes(satoshiToValueWithPrecision(satoshiPrice, 9))
-      outputUsd(amount, outputCurrencyToken.name)
-      priceLabel(currencyToken, outputCurrencyToken.name, parsedPrice)
+      console.log('response', response)
+      saveCalculateTrade(response)
+      // const amount = removeDecimalTrailingZeroes(satoshiToValueWithPrecision(response.poolamount?.value || '', 9))
+      const poolAmount = formatUnits(response.poolamount!.value, outputCurrencyToken.decimals);
+      dispatch(setOutputCurrencyAmount({ outputCurrencyAmount: poolAmount }))
+      // console.log('response.fee?.value', response.fee?.value)
+      dispatch(setFee({ fee: response.fee!.value }))
+      // const satoshiPrice = toSatoshi(response.clientamount!.value).div(response.poolamount!.value).toString()
+      // const parsedPrice = removeDecimalTrailingZeroes(satoshiToValueWithPrecision(satoshiPrice, 9))
+
+      // const price = Number(inputCurrencyAmount) / Number(poolAmount)
+      const price = Big(inputCurrencyAmount).div(Big(poolAmount))
+      outputUsd(poolAmount, outputCurrencyToken.name)
+      // priceLabel(currencyToken, outputCurrencyToken.name, parsedPrice)
+      priceLabel(currencyToken, outputCurrencyToken.name, price.toString())
       setDisabled(false)
     }).catch(error => {
       console.log(error)
       setDisabled(false)
+      setSavedCalculateTrade(undefined)
     })
   }
 
@@ -161,22 +348,108 @@ export const Connext = () => {
   const calculateInputCurrency = (currencyToken: string, tradingPairStr: string, satoshi: string) => {
     const promise = createCalculateTrade(webSocketSubject, webSocketListener, tradingPairStr, currencyToken, satoshi, SendingSide.POOL)
     promiseTimeout(promise, PROMISE_MAX_TIMEOUT).then((response: CalculateTradeResponse.AsObject) => {
-      const amount = removeDecimalTrailingZeroes(satoshiToValueWithPrecision(response.clientamount?.value || '', 2))
-      dispatch(setInputCurrencyAmount({ inputCurrencyAmount: amount }))
-      const satoshiPrice = response.price?.value || ''
-      const parsedPrice = removeDecimalTrailingZeroes(satoshiToValueWithPrecision(satoshiPrice, 9))
-      priceLabel(inputCurrencyToken.name, outputCurrencyToken.name, parsedPrice)
-      inputUsd(amount, inputCurrencyToken.name)
+      console.log('response', response)
+      saveCalculateTrade(response)
+      // const amount = removeDecimalTrailingZeroes(satoshiToValueWithPrecision(response.clientamount?.value || '', 9))
+      const clientAmount = formatUnits(response.clientamount!.value, inputCurrencyToken.decimals);
+      dispatch(setInputCurrencyAmount({ inputCurrencyAmount: clientAmount }))
+      // console.log('response.fee?.value', response.fee?.value)
+      dispatch(setFee({ fee: response.fee!.value }))
+      // const satoshiPrice = toSatoshi(response.clientamount!.value).div(response.poolamount!.value).toString()
+      // const parsedPrice = removeDecimalTrailingZeroes(satoshiToValueWithPrecision(satoshiPrice, 9))
+      // const price = Number(clientAmount) / Number(outputCurrencyAmount)
+      const price = Big(clientAmount).div(Big(outputCurrencyAmount))
+      priceLabel(inputCurrencyToken.name, outputCurrencyToken.name, price.toString())
+      inputUsd(clientAmount, inputCurrencyToken.name)
       setDisabled(false)
     }).catch(error => {
       console.log(error)
       setDisabled(false)
+      setSavedCalculateTrade(undefined)
     })
+  }
+
+
+  const handleGetTradingPairs = async () => {
+    try {
+      const promise = getTradingPairs(
+        webSocketSubject,
+        webSocketListener
+      )
+      const resp: GetTradingPairsResponse.AsObject = await promiseTimeout(promise, PROMISE_MAX_TIMEOUT)
+      return resp
+    } catch (error) {
+      console.log(error)
+      throw error
+    }
+  }
+
+  const handleCreateTrade = async (transferId: string) => {
+    try {
+      console.log('fee: ', fee)
+      if (!customWebSocket) {
+        throw new Error('The client could not be authenticated ')
+      }
+      const { webSocketSubject, webSocketListener } = customWebSocket
+      const promise = createTrade(
+        webSocketSubject,
+        webSocketListener,
+        newBigInteger(savedCalculateTrade!.clientamount),
+        inputCurrencyToken.name,
+        newBigInteger(savedCalculateTrade!.poolamount),
+        outputCurrencyToken.name,
+        newBigInteger(savedCalculateTrade!.fee),
+        transferId
+      )
+      const resp: TradeResponse.AsObject = await promiseTimeout(promise, PROMISE_MAX_TIMEOUT)
+      return resp.transferid
+    } catch (error) {
+      console.log(error)
+      throw error
+    }
+  }
+
+  const awaitForCompletedTrade = async () => {
+    try {
+      if (!customWebSocket) {
+        throw new Error('The client could not be authenticated ')
+      }
+      const { webSocketSubject, webSocketListener } = customWebSocket
+      const promise = awaitForTradeCompleted(
+        webSocketSubject,
+        webSocketListener
+      )
+      const resp: ConfirmTradeResponse.AsObject = await promiseTimeout(promise, COMPLETED_TRADE_MAX_TIMEOUT)
+      return resp.tradeid
+    } catch (error) {
+      console.log(error)
+      throw error
+    }
+  }
+
+  const handleConfirmTrade = async (tradeId: string, transferId: string) => {
+    try {
+      if (!customWebSocket) {
+        throw new Error('The client could not be authenticated ')
+      }
+      const { webSocketSubject, webSocketListener } = customWebSocket
+      const promise = createConfirmTrade(
+        webSocketSubject,
+        webSocketListener,
+        tradeId,
+        transferId
+      )
+      const resp: ConfirmTradeResponse.AsObject = await promiseTimeout(promise, PROMISE_MAX_TIMEOUT)
+      return resp.tradeid
+    } catch (error) {
+      console.log(error)
+      throw error
+    }
   }
 
   const getTrade = () => {
     if (independentField === IndependentFieldMap.CLIENT) {
-      habdleInputCurrency()
+      handleInputCurrency()
     } else {
       handleOutputCurrency()
     }
@@ -188,25 +461,69 @@ export const Connext = () => {
     savedGetTrade.current = getTrade
   });
 
+  const [showSettings, setShowSettings] = useState(false)
+
+  const toggleSettings = () => {
+    setShowSettings(!showSettings)
+  }
   useEffect(() => {
+    if (!updatePrice) {
+      return
+    }
     savedGetTrade.current()
     const interval = setInterval(() => {
       savedGetTrade.current()
     }, 15000);
     return () => clearInterval(interval);
-  }, [typedValueDebounced, independentField])
+  }, [typedValueDebounced, independentField, updatePrice])
 
   const handleSubmit = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
     toggleWalletModal()
   }
 
+
+
+  const firstUpdate = useRef(true)
+
+  const savedHandleConnext = useRef(handleConnext)
+
+  useEffect(() => {
+    savedHandleConnext.current = handleConnext
+  });
+
+  useEffect(() => {
+    if (firstUpdate.current) {
+      firstUpdate.current = false
+      return
+    }
+    savedHandleConnext.current()
+  }, [actionConnext])
+
+  const recover = () => {
+    setActionConnext({
+      action: ActionsConnext.RECOVER,
+      updates: actionConnext.updates + 1
+    })
+  }
+
+  const handleInterchange = () => {
+    setActionConnext({
+      action: ActionsConnext.SWAP,
+      updates: actionConnext.updates + 1
+    })
+  }
+
+  const [slippage, setSlippage] = useState(20)
+
   return (
     <Container>
       <StyledSwapHeader>
         <AutoRow justify='space-between'>
           <HeaderTitle >Connext</HeaderTitle>
-          <CardHeaderMenuIcon></CardHeaderMenuIcon>
+          <div style={{ cursor: "pointer" }}>
+            <CardHeaderMenuIcon onClick={toggleSettings}></CardHeaderMenuIcon>
+          </div>
         </AutoRow>
       </StyledSwapHeader>
       <AutoRow justify='center'>
@@ -240,9 +557,51 @@ export const Connext = () => {
       <SwapBottomSectionFiller />
       <SwapBottomSection trade={true} previewing={false}>
         <ContainerButtons>
-          <ButtonLight onClick={handleSubmit}>Connect Wallet</ButtonLight>
+          {(!account)
+            ? <ButtonLight onClick={handleSubmit}>Connect Wallet</ButtonLight>
+            :
+            <ConfirmInterchangeComponent
+              inputCurrency={inputCurrencyToken.name}
+              inputAmount={inputCurrencyAmount}
+              outputCurrency={outputCurrencyToken.name}
+              outputAmount={outputCurrencyAmount}
+              onInterchange={handleInterchange}
+              disabled={!(inputCurrencyAmount && outputCurrencyAmount)}
+            />
+          }
+          <LoadingScreenComponent {...loadingScreen} />
         </ContainerButtons>
       </SwapBottomSection>
+      {(showSettings)
+        &&
+        <SettingsTab
+          showSettings={showSettings}
+          toggle={toggleSettings}
+          recover={recover}
+          slippage={slippage}
+          setSlippage={setSlippage}
+        ></SettingsTab>
+      }
+      < SuccessScreenModal
+        onDismiss={() => {
+          setShowSuccessScreen(false)
+          handleInputCurrencyToken(tradingPair)
+        }}
+        modalOpen={showSuccessScreen}
+        message={"Swap was completed successfully"}
+        senderChain={inputCurrencyToken.name}
+        receiverChain={outputCurrencyToken.name}
+        addressAccount={account!}
+        txUrl={txHash}
+      />
+      <HandleErrorComponent
+        connextError={connextError}
+        inputCurrencyToken={inputCurrencyToken}
+        outputCurrencyToken={outputCurrencyToken}
+        account={account!}
+        setConnextError={setConnextError}
+        retrySetup={handleConnext}
+      />
     </Container >
   )
 }

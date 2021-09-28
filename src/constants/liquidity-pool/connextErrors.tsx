@@ -1,0 +1,37 @@
+export const ERROR_STATES = {
+  ERROR_SETUP: "ERROR_SETUP",
+  ERROR_TRANSFER: "ERROR_TRANSFER",
+  ERROR_NETWORK: "ERROR_NETWORK",
+  ERROR_RECOVER: "ERROR_RECOVER",
+  ERROR_RESET: "ERROR_RESET",
+  ERROR_WALLET_NOT_FOUND: "ERROR_WALLET_NOT_FOUND",
+  ERROR_BALANCE_NOT_FOUND: "ERROR_BALANCE_NOT_FOUND",
+  ERROR_SWAP_FAILED: "ERROR_SWAP_FAILED",
+} as const;
+export type ErrorStates = keyof typeof ERROR_STATES;
+
+export const SCREEN_STATES = {
+  LOADING: "LOADING",
+  USER_INFO: "USER_INFO",
+  EXISTING_BALANCE: "EXISTING_BALANCE",
+  HISTORY: "HISTORY",
+  SWAP: "SWAP",
+  RECOVER: "RECOVER",
+  RECOVER_SUCCESS: "RECOVER_SUCCESS",
+  LISTENER: "LISTENER",
+  STATUS: "STATUS",
+  SUCCESS: "SUCCESS",
+  ...ERROR_STATES,
+} as const;
+export type ScreenStates = keyof typeof SCREEN_STATES;
+
+
+export interface ConnextError {
+  type: ErrorStates,
+  message: string
+}
+
+export const resetConnextError: ConnextError = {
+  type: ERROR_STATES.ERROR_RESET,
+  message: ''
+}

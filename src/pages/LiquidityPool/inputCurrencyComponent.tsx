@@ -5,12 +5,12 @@ import Column from 'components/Column';
 import { escapeRegExp } from '../../utils'
 import { Text } from 'rebass'
 import useTheme from '../../hooks/useTheme'
-import { TokenCurrency } from 'constants/liquidity-pool/tradingPairs';
+import { TokenInfo } from 'services/customBrowserNode/types';
 
 interface InputCurrencyComponentProps {
   handleInputFieldCurrency: (value: string) => void
   inputFieldCurrency: string
-  currency: TokenCurrency
+  currency: TokenInfo
   trade?: string
   usdPrice: string
 }
@@ -33,7 +33,7 @@ export const InputCurrencyComponent = ({ handleInputFieldCurrency, inputFieldCur
           <AutoRow justify='space-between'>
             <Column>
               <AutoRow style={{ gap: '20px' }}>
-                <LogoInputCurrency src={currency.urlIcon} alt={""} />
+                <LogoInputCurrency src={currency.logo!} alt={""} />
                 <div >{currency.name}</div>
               </AutoRow>
             </Column>

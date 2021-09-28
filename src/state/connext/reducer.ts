@@ -1,5 +1,6 @@
 import { createReducer } from '@reduxjs/toolkit'
-import { DEFAULT_TRADING_PAIR, TokenCurrency, TradingPair, TRADING_PAIRS } from 'constants/liquidity-pool/tradingPairs'
+import { DEFAULT_TRADING_PAIR, TradingPair, TRADING_PAIRS } from 'constants/liquidity-pool/tradingPairs'
+import { TokenInfo } from 'services/customBrowserNode/types'
 import {
   setIndependetField,
   IndependentFieldMap,
@@ -14,10 +15,11 @@ import {
   setInputCurrencyAmountUsd,
   setOutputCurrencyAmountUsd,
   setTypedValue,
+  setFee
 } from './actions'
 
 export interface Currency {
-  currencyToken: TokenCurrency,
+  currencyToken: TokenInfo,
   currencyAmount: string
   currencyAmountUsd: string
 }
@@ -27,7 +29,8 @@ export interface SwapTradingPair {
   independentField: IndependentFieldMap,
   typedValue: string,
   inputCurrency: Currency,
-  outputCurrency: Currency
+  outputCurrency: Currency,
+  fee: string
 }
 
 const initialState: SwapTradingPair = {
@@ -35,15 +38,16 @@ const initialState: SwapTradingPair = {
   independentField: IndependentFieldMap.CLIENT,
   typedValue: '',
   inputCurrency: {
-    currencyToken: { name: '', urlIcon: '' },
+    currencyToken: TRADING_PAIRS[DEFAULT_TRADING_PAIR].principalCurrency,
     currencyAmount: '',
     currencyAmountUsd: ''
   },
   outputCurrency: {
-    currencyToken: { name: '', urlIcon: '' },
+    currencyToken: TRADING_PAIRS[DEFAULT_TRADING_PAIR].secondaryCurrency,
     currencyAmount: '',
     currencyAmountUsd: ''
   },
+  fee: '0'
 }
 
 export default createReducer<SwapTradingPair>(initialState, builder =>
@@ -98,5 +102,8 @@ export default createReducer<SwapTradingPair>(initialState, builder =>
     })
     .addCase(setOutputCurrencyToken, (state, { payload: { outputCurrencyToken } }) => {
       state.outputCurrency.currencyToken = outputCurrencyToken
+    })
+    .addCase(setFee, (state, { payload: { fee } }) => {
+      state.fee = fee
     })
 )

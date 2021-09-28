@@ -2,15 +2,21 @@
 import { Command, Event } from '../../models/protos/api_pb';
 import { first } from 'rxjs/operators';
 import { ProtobufFactory } from './helper/protobuf-factory';
-import { CalculateTradeResponse, GetTradingPairsResponse, TradeResponse } from '../../models/protos/commands_pb';
+import { CalculateTradeResponse, ConfirmTradeResponse, GetTradingPairsResponse, TradeResponse } from '../../models/protos/commands_pb';
 import { Subject } from 'rxjs';
 import { BigInteger, SendingSideMap } from '../../models/protos/models_pb';
 
 import { WebSocketSubject } from 'rxjs/internal/observable/dom/WebSocketSubject';
+import { TradeCompleted } from 'models/protos/events_pb';
 
 const getStream = (webSocketListener: Subject<Event>, commandId: string) => {
   return webSocketListener
     .pipe(first(event => event.hasResponse() && event?.getResponse()?.getClientmessageid() === commandId));
+}
+
+const getStreamUntrusted = (webSocketListener: Subject<Event>) => {
+  return webSocketListener
+    .pipe(first(event => event.hasResponse()));
 }
 
 
@@ -89,9 +95,19 @@ export const createTrade = (
   clientCurrency: string,
   poolAmount: BigInteger,
   poolCurrency: string,
-  price: BigInteger) => {
-
-  const message: Command = ProtobufFactory.createTrade(clientAmount, clientCurrency, poolAmount, poolCurrency, price);
+  fee: BigInteger,
+  transferId: string) => {
+  const obj = {
+    clientAmount,
+    clientCurrency,
+    poolAmount,
+    poolCurrency,
+    fee
+  }
+  console.log('create trade', obj)
+  console.log('create trade', obj)
+  console.log('create trade', obj)
+  const message: Command = ProtobufFactory.createTrade(clientAmount, clientCurrency, poolAmount, poolCurrency, fee, transferId);
   webSocketSubject.next(message.serializeBinary());
 
 
@@ -110,3 +126,53 @@ export const createTrade = (
   });
   return promise;
 }
+
+
+export const createConfirmTrade = (
+  webSocketSubject: WebSocketSubject<Uint8Array>,
+  webSocketListener: Subject<Event>,
+  tradeId: string,
+  transferId: string) => {
+
+  const message: Command = ProtobufFactory.createConfirmTrade(tradeId, transferId);
+  webSocketSubject.next(message.serializeBinary());
+
+
+  const streamVal = getStream(webSocketListener, message.getClientmessageid())
+  console.log(getStream(webSocketListener, message.getClientmessageid()))
+
+  const promise = new Promise<ConfirmTradeResponse.AsObject | undefined>((resolve, reject) => {
+    streamVal.forEach((event: Event) => {
+      const commandResponse = event.toObject().response;
+      if (commandResponse?.commandfailed) {
+        reject(Error(commandResponse?.commandfailed.reason));
+      } else {
+        resolve(commandResponse?.traderesponse);
+      }
+    });
+  });
+  return promise;
+}
+
+
+
+
+export const awaitForTradeCompleted = (
+  webSocketSubject: WebSocketSubject<Uint8Array>,
+  webSocketListener: Subject<Event>) => {
+
+  const streamVal = getStreamUntrusted(webSocketListener)
+
+  const promise = new Promise<TradeCompleted.AsObject | undefined>((resolve, reject) => {
+    streamVal.forEach((event: Event) => {
+      const commandResponse = event.toObject().response;
+      if (commandResponse?.commandfailed) {
+        reject(Error(commandResponse?.commandfailed.reason));
+      } else {
+        resolve(commandResponse?.traderesponse);
+      }
+    });
+  });
+  return promise;
+}
+

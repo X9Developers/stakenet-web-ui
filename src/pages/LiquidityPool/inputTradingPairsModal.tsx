@@ -44,8 +44,8 @@ export const InputTradingPairsModal = ({ onDismiss, modalOpen, tradingPairs, tra
                 }>
                 <CurrencyListItem disabled={(tradingPair === pair)}>
                   <div>
-                    <LogoInputCurrency src={pair.principalCurrency.urlIcon} alt={""} width={'30px'} height={'30px'} />
-                    <LogoInputCurrency src={pair.secondaryCurrency.urlIcon} alt={""} width={'30px'} height={'30px'} />
+                    <LogoInputCurrency src={pair.principalCurrency.logo!} alt={""} width={'30px'} height={'30px'} />
+                    <LogoInputCurrency src={pair.secondaryCurrency.logo!} alt={""} width={'30px'} height={'30px'} />
                   </div>
                   <Column>
                     <Text fontWeight={500} fontSize={20}>

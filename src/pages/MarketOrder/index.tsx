@@ -1,24 +1,19 @@
 import React, { MouseEvent, useCallback, useEffect, useRef, useState } from 'react';
-import { Container, FormColumnCurrency, StyledSwapHeader, ContainerButtons, HeaderTitle } from 'components/calculator/styleds';
 import { SwapBottomSection, SwapTopSection } from 'components/SwapWrappers';
 import { AutoRow } from 'components/Row';
 import { CardHeaderMenuIcon } from 'components/Card/CardHeaderStyledComponents';
 import BigSwapArrow from 'components/swap/BigSwapArrow';
 import { SwapBottomSectionFiller } from 'components/SwapWrappers/index';
 import { ButtonLight } from 'components/Button';
-import { createCalculateTrade, promiseTimeout } from '../../services/liquidityPoolApi';
-import { useWebSocket } from '../../hooks/webSocket/useWebSocket';
-import { CalculateTradeResponse } from 'models/protos/commands_pb';
-import useDebounce from 'hooks/useDebounce';
-import { SendingSide } from 'models/protos/models_pb';
-import { IndependentFieldMap, setFee, setIndependetField, setInputCurrency, setInputCurrencyAmount, setOutputCurrency, setOutputCurrencyAmount, setTradingPair } from 'state/connext/actions';
+import { UseMarketOrderRequests } from './useMarketOrderRequests';
+import { IndependentFieldMap, setIndependetField, setInputCurrency, setInputCurrencyAmount, setOutputCurrency, setOutputCurrencyAmount, setTradingPair } from 'state/marketOrder/actions';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, AppState } from 'state';
-import { SwapTradingPair } from 'state/connext/reducer';
-// import { toSatoshiWithPrecision } from 'utils/satoshi';
+import { SwapTradingPair } from 'state/marketOrder/reducer';
+import { satoshiToValueWithPrecision, toSatoshiWithPrecision } from 'utils/satoshi';
 import { useWalletModalToggle } from 'state/application/hooks';
-import { DEFAULT_TRADING_PAIR, PROMISE_MAX_TIMEOUT, savedStateInterface, TradingPair, tradingPairsStr, TRADING_PAIRS } from 'constants/liquidity-pool/tradingPairs';
-import { switchCurrencies } from 'state/connext/actions';
+import { DEFAULT_TRADING_PAIR, TradingPair, tradingPairsStr, TRADING_PAIRS } from 'constants/liquidity-pool/tradingPairs';
+import { switchCurrencies } from 'state/marketOrder/actions';
 import { getUsdEquivalent } from 'utils/usdPrice';
 import { useActiveWeb3React } from 'hooks';
 import { ConfirmInterchangeComponent } from 'components/calculator/confirmInterchangeComponent';
@@ -27,20 +22,22 @@ import { ActionsConnext } from 'constants/liquidity-pool/tradingPairs';
 import { BigNumber } from 'ethers';
 import { resetConnextError } from 'constants/liquidity-pool/connextErrors';
 import { resetLoader } from 'constants/liquidity-pool/loadingMessagges';
-// import { createCustomWebSocket } from './createCustomWebSocket';
-import { formatUnits, parseUnits } from 'ethers/lib/utils';
 import Big from 'big.js';
-import { UseConnextRequests } from './useConnextRequests';
+import { removeDecimalTrailingZeroes } from 'utils/FormatterNumber';
+import { Container, HeaderTitle, StyledSwapHeader } from 'components/calculator/styleds';
 import { InputTradingPairsComponent } from 'components/calculator/inputTradingPairsComponent';
 import { InputCurrencyComponent } from 'components/calculator/inputCurrencyComponent';
+import { FormColumnCurrency, ContainerButtons } from 'components/calculator/styleds';
 import { SuccessScreenModal } from 'components/calculator/succesScreenModal';
 import { HandleErrorComponent } from 'components/calculator/handleErrorComponent';
 import { SettingsTab } from 'components/calculator/settingsTab';
+import { UseConnextRequests } from '../LiquidityPool/useConnextRequests';
+import useDebounce from 'hooks/useDebounce';
 
-export const Connext = () => {
+export const MarketOrder = () => {
 
   const dispatch = useDispatch<AppDispatch>()
-  const swapTradingPair: SwapTradingPair = useSelector((state: AppState) => state.liquidityPool)
+  const swapTradingPair: SwapTradingPair = useSelector((state: AppState) => state.marketOrder)
   const { independentField, inputCurrency, outputCurrency, tradingPair }: SwapTradingPair = swapTradingPair
   const { currencyToken: inputCurrencyToken, currencyAmount: inputCurrencyAmount } = inputCurrency
   const { currencyToken: outputCurrencyToken, currencyAmount: outputCurrencyAmount } = outputCurrency
@@ -59,7 +56,12 @@ export const Connext = () => {
   const [showSuccessScreen, setShowSuccessScreen] = useState(false)
   const [txHash, setTxHash] = useState("")
   const [updatePrice, setUpdatePrice] = useState(true)
-  const [savedCalculateTrade, setSavedCalculateTrade] = useState<savedStateInterface | undefined>(undefined)
+  interface savedStateInterface {
+    clientamount: string,
+    poolamount: string,
+    fee: string,
+  }
+  const [savedCalculateTrade] = useState<savedStateInterface | undefined>(undefined)
 
   const priceLabel = (inputTokenName: string, outputTokenName: string, price: string) => {
     const priceLabelTmp = `${price} ${inputTokenName}/${outputTokenName}`
@@ -70,10 +72,17 @@ export const Connext = () => {
 
   const { account } = useActiveWeb3React()
 
-  const { webSocketSubject, webSocketListener } = useWebSocket()
+  const [currencyPrice, setCurrencyPrice] = useState('')
+
 
   const swapCurrency = () => {
     dispatch(switchCurrencies())
+  }
+
+  const cleanAllPrices = () => {
+    setInputUsdState('-')
+    setOutputUsdState('-')
+    setPrice('')
   }
 
   const onFinished = (txHash: string, amountUi?: string, amountBn?: BigNumber) => {
@@ -92,11 +101,10 @@ export const Connext = () => {
     swapTradingPair
   })
 
-  const cleanAllPrices = () => {
-    setInputUsdState('-')
-    setOutputUsdState('-')
-    setPrice('')
-  }
+  const { handleSuscribe } = UseMarketOrderRequests({
+    swapTradingPair,
+    setCurrencyPrice
+  })
 
 
   const handleInputCurrencyToken = useCallback((newTradingPair: TradingPair) => {
@@ -112,6 +120,7 @@ export const Connext = () => {
   useEffect(() => {
     handleInputCurrencyToken(TRADING_PAIRS[DEFAULT_TRADING_PAIR])
   }, [handleInputCurrencyToken])
+
 
 
   const handleInputFieldCurrency = (newInputCurrency: string) => {
@@ -158,96 +167,66 @@ export const Connext = () => {
     setDisabled(true)
     setPrice('')
     cleanOutputFields()
-    if (!typedValueState || Number(typedValueState) === 0) {
+    if (!typedValueState || Number(typedValueState) === 0 || !currencyPrice) {
       setInputUsdState('-')
       setDisabled(false)
       return
     }
     inputUsd(typedValueState, inputCurrencyToken.name)
-    const formattedInput = Number(inputCurrencyAmount).toFixed(6)
-    console.log('formattedInput: ', formattedInput)
-    const transferAmountBn = BigNumber.from(parseUnits(formattedInput, inputCurrencyToken.decimals)).toString();
-
+    const satoshi = toSatoshiWithPrecision(inputCurrencyAmount, 6)
     const tradingPairStr = tradingPairsStr(tradingPair as TradingPair)
     const currencyToken = inputCurrencyToken.name
-    calculateOutputCurrency(currencyToken, tradingPairStr, transferAmountBn)
+    calculateOutputCurrency(currencyToken, tradingPairStr, satoshi)
+    setDisabled(false)
   }
 
 
-  const saveCalculateTrade = (response: CalculateTradeResponse.AsObject) => {
-    setSavedCalculateTrade({
-      clientamount: response.clientamount!.value,
-      poolamount: response.poolamount!.value,
-      fee: response.fee!.value
-    })
-  }
+  // const saveCalculateTrade = (response: CalculateTradeResponse.AsObject) => {
+  //   setSavedCalculateTrade({
+  //     clientamount: response.clientamount!.value,
+  //     poolamount: response.poolamount!.value,
+  //     fee: response.fee!.value
+  //   })
+  // }
 
-  const calculateOutputCurrency = (currencyToken: string, tradingPairStr: string, transferAmountBn: string) => {
-    console.log('Calling createCalculateTrade: ', tradingPairStr, currencyToken, transferAmountBn, SendingSide.CLIENT)
-    const promise = createCalculateTrade(webSocketSubject, webSocketListener, tradingPairStr, currencyToken, transferAmountBn, SendingSide.CLIENT)
-    promiseTimeout(promise, PROMISE_MAX_TIMEOUT).then((response: CalculateTradeResponse.AsObject) => {
-      console.log('CalculateTradeResponse: ', response)
-      saveCalculateTrade(response)
-      const poolAmount = formatUnits(response.poolamount!.value, outputCurrencyToken.decimals);
-      if (Big(poolAmount).eq(0)) {
-        throw new Error('poolAmount cannot be zero')
-      }
-      dispatch(setOutputCurrencyAmount({ outputCurrencyAmount: poolAmount }))
-      dispatch(setFee({ fee: response.fee!.value }))
-      const price = Big(inputCurrencyAmount).div(Big(poolAmount))
-      outputUsd(poolAmount, outputCurrencyToken.name)
-      priceLabel(currencyToken, outputCurrencyToken.name, price.toString())
-      setDisabled(false)
-    }).catch(error => {
-      console.log(error)
-      setDisabled(false)
-      setSavedCalculateTrade(undefined)
-    })
+  const calculateOutputCurrency = (currencyToken: string, tradingPairStr: string, satoshi: string) => {
+    const parsedCurrencyPrice = removeDecimalTrailingZeroes(satoshiToValueWithPrecision(currencyPrice.toString() || '', 9))
+    const poolAmount = (tradingPair.principalCurrency.assetId === inputCurrencyToken.assetId)
+      ? Big(inputCurrencyAmount).mul(parsedCurrencyPrice).toFixed(6)
+      : Big(inputCurrencyAmount).div(parsedCurrencyPrice).toFixed(6)
+    const parsedPoolAmount = removeDecimalTrailingZeroes(poolAmount)
+    dispatch(setOutputCurrencyAmount({ outputCurrencyAmount: parsedPoolAmount }))
+    outputUsd(parsedPoolAmount, outputCurrencyToken.name)
+    priceLabel(currencyToken, outputCurrencyToken.name, parsedCurrencyPrice)
   }
 
   const handleOutputCurrency = () => {
     setDisabled(true)
     setPrice('')
     cleanInputFields()
-    if (!typedValueState || Number(typedValueState) === 0) {
+    if (!typedValueState || Number(typedValueState) === 0 || !currencyPrice) {
       setOutputUsdState('-')
       setDisabled(false)
       return
     }
     outputUsd(typedValueState, outputCurrencyToken.name)
-    const formattedInput = Number(outputCurrencyAmount).toFixed(6)
-    console.log('formattedInput: ', formattedInput)
-    const transferAmountBn = BigNumber.from(parseUnits(formattedInput, outputCurrencyToken.decimals)).toString();
-
-
+    const satoshi = toSatoshiWithPrecision(outputCurrencyAmount, 6)
     const tradingPairStr = tradingPairsStr(tradingPair as TradingPair)
     const currencyToken = outputCurrencyToken?.name as string
-    calculateInputCurrency(currencyToken, tradingPairStr, transferAmountBn)
+    calculateInputCurrency(currencyToken, tradingPairStr, satoshi)
+    setDisabled(false)
   }
 
-  const calculateInputCurrency = (currencyToken: string, tradingPairStr: string, transferAmountBn: string) => {
-    console.log('Calling createCalculateTrade: ', tradingPairStr, currencyToken, transferAmountBn, SendingSide.POOL)
-    const promise = createCalculateTrade(webSocketSubject, webSocketListener, tradingPairStr, currencyToken, transferAmountBn, SendingSide.POOL)
-    promiseTimeout(promise, PROMISE_MAX_TIMEOUT).then((response: CalculateTradeResponse.AsObject) => {
-      console.log('CalculateTradeResponse: ', response)
-      saveCalculateTrade(response)
-      const clientAmount = formatUnits(response.clientamount!.value, inputCurrencyToken.decimals);
-      if (Big(clientAmount).eq(0)) {
-        throw new Error('clientAmount cannot be zero')
-      }
-      dispatch(setInputCurrencyAmount({ inputCurrencyAmount: clientAmount }))
-      dispatch(setFee({ fee: response.fee!.value }))
-      const price = Big(clientAmount).div(Big(outputCurrencyAmount))
-      priceLabel(inputCurrencyToken.name, outputCurrencyToken.name, price.toString())
-      inputUsd(clientAmount, inputCurrencyToken.name)
-      setDisabled(false)
-    }).catch(error => {
-      console.log(error)
-      setDisabled(false)
-      setSavedCalculateTrade(undefined)
-    })
+  const calculateInputCurrency = (currencyToken: string, tradingPairStr: string, satoshi: string) => {
+    const parsedCurrencyPrice = removeDecimalTrailingZeroes(satoshiToValueWithPrecision(currencyPrice.toString() || '', 9))
+    const clientAmount = (tradingPair.principalCurrency.assetId !== outputCurrencyToken.assetId)
+      ? Big(outputCurrencyAmount).div(parsedCurrencyPrice).toFixed(6)
+      : Big(outputCurrencyAmount).mul(parsedCurrencyPrice).toFixed(6)
+    const parsedClientAmount = removeDecimalTrailingZeroes(clientAmount)
+    dispatch(setInputCurrencyAmount({ inputCurrencyAmount: parsedClientAmount }))
+    inputUsd(parsedClientAmount, inputCurrencyToken.name)
+    priceLabel(currencyToken, inputCurrencyToken.name, parsedCurrencyPrice)
   }
-
 
 
   const getTrade = () => {
@@ -274,10 +253,10 @@ export const Connext = () => {
       return
     }
     savedGetTrade.current()
-    const interval = setInterval(() => {
-      savedGetTrade.current()
-    }, 15000);
-    return () => clearInterval(interval);
+    // const interval = setInterval(() => {
+    //   savedGetTrade.current()
+    // }, 15000);
+    // return () => clearInterval(interval);
   }, [typedValueDebounced, independentField, updatePrice])
 
   const handleSubmit = (e: MouseEvent<HTMLButtonElement>) => {
@@ -319,11 +298,26 @@ export const Connext = () => {
 
   const [slippage, setSlippage] = useState(20)
 
+
+  const savedHandleSuscribe = useRef(handleSuscribe)
+
+  useEffect(() => {
+    savedHandleSuscribe.current = handleSuscribe
+  });
+
+  useEffect(() => {
+    savedHandleSuscribe.current()
+    const interval = setInterval(() => {
+      savedHandleSuscribe.current()
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [tradingPair])
+
   return (
     <Container>
       <StyledSwapHeader>
         <AutoRow justify='space-between'>
-          <HeaderTitle >Connext</HeaderTitle>
+          <HeaderTitle >Market order price: {currencyPrice}</HeaderTitle>
           <div style={{ cursor: "pointer" }}>
             <CardHeaderMenuIcon onClick={toggleSettings}></CardHeaderMenuIcon>
           </div>

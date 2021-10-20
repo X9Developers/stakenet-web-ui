@@ -1,10 +1,10 @@
 
-import { Command, Event } from '../../models/protos/api_pb';
+import { Command, Event } from '../models/protos/api_pb';
 import { first } from 'rxjs/operators';
-import { ProtobufFactory } from './helper/protobuf-factory';
-import { CalculateTradeResponse, ConfirmTradeResponse, GetTradingPairsResponse, TradeResponse } from '../../models/protos/commands_pb';
+import { ProtobufFactory } from '../helpers/protobuf-factory';
+import { CalculateTradeResponse, ConfirmTradeResponse, GetTradingPairsResponse, SubscribeResponse, TradeResponse, GetHistoricTradesResponse } from '../models/protos/commands_pb';
 import { Subject } from 'rxjs';
-import { BigInteger, SendingSideMap } from '../../models/protos/models_pb';
+import { BigInteger, SendingSideMap } from '../models/protos/models_pb';
 
 import { WebSocketSubject } from 'rxjs/internal/observable/dom/WebSocketSubject';
 import { TradeCompleted } from 'models/protos/events_pb';
@@ -175,4 +175,70 @@ export const awaitForTradeCompleted = (
   });
   return promise;
 }
+
+export const subscribe = (
+  webSocketSubject: WebSocketSubject<Uint8Array>,
+  webSocketListener: Subject<Event>,
+  tradingPair: string) => {
+
+  const message: Command = ProtobufFactory.createSubscribe(tradingPair);
+  webSocketSubject.next(message.serializeBinary());
+
+  const orderbookStream = getStream(webSocketListener, message.getClientmessageid());
+  const promise = new Promise<SubscribeResponse.AsObject | undefined>((resolve, reject) => {
+    orderbookStream.forEach((event: Event) => {
+      const commandResponse = event.toObject().response;
+      if (commandResponse?.commandfailed) {
+        reject(Error(commandResponse?.commandfailed.reason));
+      } else {
+        resolve(commandResponse?.subscriberesponse);
+      }
+    });
+  });
+  return promise;
+}
+
+
+export const getHistoryTrades = (
+  webSocketSubject: WebSocketSubject<Uint8Array>,
+  webSocketListener: Subject<Event>,
+  tradingPair: string) => {
+
+  const message: Command = ProtobufFactory.createGetHistoricTrades(tradingPair);
+  webSocketSubject.next(message.serializeBinary());
+
+  const orderbookStream = getStream(webSocketListener, message.getClientmessageid());
+  const promise = new Promise<GetHistoricTradesResponse.AsObject | undefined>((resolve, reject) => {
+    orderbookStream.forEach((event: Event) => {
+      const commandResponse = event.toObject().response;
+      if (commandResponse?.commandfailed) {
+        reject(Error(commandResponse?.commandfailed.reason));
+      } else {
+        resolve(commandResponse?.gethistorictradesresponse);
+      }
+    });
+  });
+  return promise;
+}
+
+
+// public subscribe(tradingPair: string): Promise<SubscribeResponse.AsObject> {
+//   const message: Command = ProtobufFactory.createSubscribe(tradingPair);
+//   this.orderbookService.send(message);
+
+//   const orderbookStream = this.getStream(message.getClientmessageid());
+//   const promise = new Promise<SubscribeResponse.AsObject>((resolve, reject) => {
+//     orderbookStream.forEach((event: Event) => {
+//       const commandResponse = event.toObject().response;
+//       if (commandResponse.commandfailed) {
+//         reject(Error(commandResponse.commandfailed.reason));
+//         this.notificationService.error(commandResponse.commandfailed.reason);
+//       } else {
+//         resolve(commandResponse.subscriberesponse);
+//       }
+//     });
+//   });
+
+//   return promiseTimeout(promise);
+// }
 

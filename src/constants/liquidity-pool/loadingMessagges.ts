@@ -1,4 +1,4 @@
-import { LoadingScreenComponentProps } from "pages/LiquidityPool/loadingScreenComponent"
+import { LoadingScreenComponentProps } from "components/calculator/loadingScreenComponent"
 
 
 

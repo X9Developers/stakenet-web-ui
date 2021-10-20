@@ -186,3 +186,22 @@ export const TRADING_PAIRS: tradingPairDictionaty<TradingPair> = {
   'ETH_USDC': ETH_USDC,
   'WETH_USDT': WETH_USDT
 }
+
+
+export interface ActionConnextState {
+  action: ActionsConnext;
+  updates: number;
+}
+
+export interface savedStateInterface {
+  clientamount: string,
+  poolamount: string,
+  fee: string,
+}
+
+
+
+export enum SwapApi {
+  LIQUIDITY_POOL = 0,
+  MARKET_ORDER = 1
+}

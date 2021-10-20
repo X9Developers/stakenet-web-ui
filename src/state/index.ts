@@ -12,6 +12,7 @@ import burn from './burn/reducer'
 import multicall from './multicall/reducer'
 import keyring from './keyring/reducer'
 import liquidityPool from './connext/reducer'
+import marketOrder from './marketOrder/reducer'
 
 const PERSISTED_KEYS: string[] = ['user', 'transactions', 'lists']
 
@@ -26,7 +27,8 @@ const store = configureStore({
     multicall,
     lists,
     keyring,
-    liquidityPool
+    liquidityPool,
+    marketOrder
   },
   middleware: [...getDefaultMiddleware({ thunk: false, immutableCheck: false }), save({ states: PERSISTED_KEYS })],
   preloadedState: load({ states: PERSISTED_KEYS })

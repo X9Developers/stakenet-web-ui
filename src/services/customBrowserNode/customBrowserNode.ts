@@ -258,7 +258,8 @@ export class CustomBrowserNode {
         } ${this.recipientChain?.assetId} ${this.crossChainTransferId}`,
       );
 
-      const transferAmountBn = BigNumber.from(parseUnits(amountToSend, this.senderChain!.decimals)).toString();
+      // const transferAmountBn = BigNumber.from(parseUnits(amountToSend, this.senderChain!.decimals)).toString();
+      const transferAmountBn = amountToSend
       const transferDeets = await createFromAssetTransfer(
         this.browserNode!,
         this.senderChain?.chainId!,

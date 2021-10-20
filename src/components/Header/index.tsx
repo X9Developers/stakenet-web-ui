@@ -308,6 +308,9 @@ export default function Header() {
           <StyledNavLink id={`stake-nav-link`} to={'/liquidity-pool'}>
             LiquidityPool
           </StyledNavLink>
+          <StyledNavLink id={`stake-nav-link`} to={'/marketOrder'}>
+            MarketOrder
+          </StyledNavLink>
         </HeaderLinks>
       </HeaderRow>
       <HeaderControls>
@@ -321,9 +324,9 @@ export default function Header() {
             <WalletBalanceWrapper onClick={() => setShowUniBalanceModal(true)}>
               <WalletBalanceAmount active={!!account && !availableClaim} style={{ pointerEvents: 'auto' }}>
                 <USDTokenBalanceAccumulator
-                  currencyAmount={ userEthBalance }
-                  incrementUSDWalletBalance={ incrementUSDWalletBalance }
-                  decrementUSDWalletBalance={ decrementUSDWalletBalance }
+                  currencyAmount={userEthBalance}
+                  incrementUSDWalletBalance={incrementUSDWalletBalance}
+                  decrementUSDWalletBalance={decrementUSDWalletBalance}
                 />
                 {/* { Object.values(tokenBalances).map((tokenAmount) =>
                   <USDTokenBalanceAccumulator

@@ -4,10 +4,10 @@ import { BigNumber } from "ethers";
 import { formatUnits } from "ethers/lib/utils";
 import { CustomBrowserNode } from "services/customBrowserNode/customBrowserNode";
 import { TokenInfo } from "services/customBrowserNode/types";
-import { LoadingScreenComponentProps } from './loadingScreenComponent';
-import { HUB_PUBLIC_IDENTIFIER } from '../../constants/liquidity-pool/publicIdentifiers';
+import { LoadingScreenComponentProps } from 'components/calculator/loadingScreenComponent';
+import { HUB_PUBLIC_IDENTIFIER } from 'constants/liquidity-pool/publicIdentifiers';
 import { Web3Provider } from '@ethersproject/providers';
-import { settingUpChannelsLoader } from '../../constants/liquidity-pool/loadingMessagges';
+import { settingUpChannelsLoader } from 'constants/liquidity-pool/loadingMessagges';
 
 
 export const initCustomBrowserNode = async (

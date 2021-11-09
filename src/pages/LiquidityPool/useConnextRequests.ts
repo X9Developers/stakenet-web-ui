@@ -81,6 +81,10 @@ export const UseConnextRequests = ({
       if (!checkForWallet()) {
         return
       }
+      if (true) {
+        console.log('this function is not available at the moment ')
+        return
+      }
       const customBrowserNode = await initCustomBrowserNode(
         inputCurrencyToken,
         outputCurrencyToken,

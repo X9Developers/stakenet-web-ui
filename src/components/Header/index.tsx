@@ -1,4 +1,4 @@
-import { ChainId, CurrencyAmount, JSBI, TokenAmount } from '@uniswap/sdk'
+import { ChainId } from '@uniswap/sdk'
 import React, { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { darken } from 'polished'
@@ -10,22 +10,23 @@ import Logo from '../../assets/svg/logo.svg'
 import LogoDark from '../../assets/svg/logo_white.svg'
 import { useActiveWeb3React } from '../../hooks'
 import { useDarkModeManager } from '../../state/user/hooks'
-import { useETHBalances, useAggregateWalletBalance } from '../../state/wallet/hooks'
-import { CardNoise } from '../earn/styled'
-import { CountUp } from 'use-count-up'
-import { TYPE } from '../../theme'
+// import { useETHBalances, useAggregateWalletBalance } from '../../state/wallet/hooks'
+// import { CardNoise } from '../earn/styled'
+// import { CountUp } from 'use-count-up'
+// import { TYPE } from '../../theme'
 
 import { YellowCard } from '../Card'
 
 import Row, { RowFixed } from '../Row'
 import Web3Status from '../Web3Status'
 import ClaimModal from '../claim/ClaimModal'
-import { useUserHasAvailableClaim } from '../../state/claim/hooks'
+// import { useUserHasAvailableClaim } from '../../state/claim/hooks'
 import Modal from '../Modal'
 import WalletBalanceContent from './UniBalanceContent'
-import usePrevious from '../../hooks/usePrevious'
-import USDTokenBalanceAccumulator from './USDTokenBalanceAccumulator'
-import { USDT } from '../../constants/index'
+import Menu from 'components/Menu'
+// import usePrevious from '../../hooks/usePrevious'
+// import USDTokenBalanceAccumulator from './USDTokenBalanceAccumulator'
+// import { USDT } from '../../constants/index'
 
 const HeaderFrame = styled.div`
   display: grid;
@@ -120,33 +121,45 @@ const AccountElement = styled.div<{ active: boolean }>`
   }
 `
 
-const WalletBalanceAmount = styled(AccountElement)`
-  color: white;
-  padding: 4px 8px;
-  height: 36px;
-  font-weight: 500;
-  background-color: ${({ theme }) => theme.bg1};
-  background: ${({ theme }) => `radial-gradient(174.47% 188.91% at 1.84% 0%, ${theme.primaryText1} 0%, ${theme.bg2} 100%), #edeef2`};
-`
+// const WalletBalanceAmount = styled(AccountElement)`
+//   color: white;
+//   padding: 4px 8px;
+//   height: 36px;
+//   font-weight: 500;
+//   background-color: ${({ theme }) => theme.bg1};
+//   background: ${({ theme }) => `radial-gradient(174.47% 188.91% at 1.84% 0%, ${theme.primaryText1} 0%, ${theme.bg2} 100%), #edeef2`};
+// `
 
-const WalletBalanceWrapper = styled.span`
-  width: fit-content;
-  position: relative;
-  cursor: pointer;
+// const WalletBalanceWrapper = styled.span`
+//   width: fit-content;
+//   position: relative;
+//   cursor: pointer;
 
-  :hover {
-    opacity: 0.8;
-  }
+//   :hover {
+//     opacity: 0.8;
+//   }
 
-  :active {
-    opacity: 0.9;
-  }
-`
+//   :active {
+//     opacity: 0.9;
+//   }
+// `
 
 const HideSmall = styled.span`
   ${({ theme }) => theme.mediaWidth.upToSmall`
     display: none;
   `};
+`
+
+// const HideLarge = styled.span`
+//   ${({ theme }) => theme.mediaWidth.upToLarge`
+//     display: none;
+//   `};
+// `
+
+const HideLarge = styled.span`
+  @media only screen and (min-width: 720px) {
+    display: none;
+  }
 `
 
 const NetworkCard = styled(YellowCard)`
@@ -241,6 +254,20 @@ export const StyledMenuButton = styled.button`
   }
 `
 
+export const MenuContainer = styled.div`
+  display: flex;
+  align-items: center;
+  pointer-events: auto;
+  justify-self: flex-end;
+  margin-right: 12px;
+  ${({ theme }) => theme.mediaWidth.upToSmall`
+    justify-self: center;
+  `};
+  :hover {
+    cursor: pointer;
+  }
+`
+
 const NETWORK_LABELS: { [chainId in ChainId]?: string } = {
   [ChainId.RINKEBY]: 'Rinkeby',
   [ChainId.ROPSTEN]: 'Ropsten',
@@ -252,26 +279,26 @@ export default function Header() {
   const { account, chainId } = useActiveWeb3React()
   const { t } = useTranslation()
 
-  const userEthBalance = useETHBalances(account ? [account] : [])?.[account ?? '']
+  // const userEthBalance = useETHBalances(account ? [account] : [])?.[account ?? '']
   const [darkMode] = useDarkModeManager()
   // const tokenBalances = useAllTokenBalances()
-  const [usdWalletBalance, setUsdWalletBalance] = useState<TokenAmount | undefined>(undefined)
+  // const [usdWalletBalance] = useState<TokenAmount | undefined>(undefined)
 
 
-  const availableClaim: boolean = useUserHasAvailableClaim(account)
+  // const availableClaim: boolean = useUserHasAvailableClaim(account)
 
-  const aggregateBalance: TokenAmount | undefined = useAggregateWalletBalance()
+  // const aggregateBalance: TokenAmount | undefined = useAggregateWalletBalance()
 
   const [showUniBalanceModal, setShowUniBalanceModal] = useState(false)
 
-  const countUpValue = usdWalletBalance?.toFixed(2) ?? '0'
-  const countUpValuePrevious = usePrevious(countUpValue) ?? '0'
-  const incrementUSDWalletBalance = (increment: CurrencyAmount | undefined): void => {
-    setUsdWalletBalance(new TokenAmount(USDT, JSBI.add(usdWalletBalance?.raw ?? JSBI.BigInt(0), increment?.raw ?? JSBI.BigInt(0))))
-  }
-  const decrementUSDWalletBalance = (decrement: CurrencyAmount | undefined): void => {
-    setUsdWalletBalance(new TokenAmount(USDT, JSBI.subtract(usdWalletBalance?.raw ?? JSBI.BigInt(0), decrement?.raw ?? JSBI.BigInt(0))))
-  }
+  // const countUpValue = usdWalletBalance?.toFixed(2) ?? '0'
+  // const countUpValuePrevious = usePrevious(countUpValue) ?? '0'
+  // const incrementUSDWalletBalance = (increment: CurrencyAmount | undefined): void => {
+  //   setUsdWalletBalance(new TokenAmount(USDT, JSBI.add(usdWalletBalance?.raw ?? JSBI.BigInt(0), increment?.raw ?? JSBI.BigInt(0))))
+  // }
+  // const decrementUSDWalletBalance = (decrement: CurrencyAmount | undefined): void => {
+  //   setUsdWalletBalance(new TokenAmount(USDT, JSBI.subtract(usdWalletBalance?.raw ?? JSBI.BigInt(0), decrement?.raw ?? JSBI.BigInt(0))))
+  // }
 
   return (
     <HeaderFrame>
@@ -279,39 +306,52 @@ export default function Header() {
       <Modal isOpen={showUniBalanceModal} onDismiss={() => setShowUniBalanceModal(false)}>
         <WalletBalanceContent setShowUniBalanceModal={setShowUniBalanceModal} />
       </Modal>
-      <HeaderRow>
+      <HeaderRow style={{ justifyContent: 'inherit' }}>
         <Title href=".">
           <StakenetIcon>
             <img width={'48px'} src={darkMode ? LogoDark : Logo} alt="logo" />
           </StakenetIcon>
         </Title>
-        <HeaderLinks>
-          <StyledNavLink id={`swap-nav-link`} to={'/swap'}>
-            {t('swap')}
-          </StyledNavLink>
-          <StyledNavLink
-            id={`pool-nav-link`}
-            to={'/pool'}
-            isActive={(match, { pathname }) =>
-              Boolean(match) ||
-              pathname.startsWith('/add') ||
-              pathname.startsWith('/remove') ||
-              pathname.startsWith('/create') ||
-              pathname.startsWith('/find')
-            }
-          >
-            {t('pool')}
-          </StyledNavLink>
-          <StyledNavLink id={`stake-nav-link`} to={'/wallet'}>
-            Wallet
-          </StyledNavLink>
-          <StyledNavLink id={`stake-nav-link`} to={'/liquidity-pool'}>
-            LiquidityPool
-          </StyledNavLink>
-          <StyledNavLink id={`stake-nav-link`} to={'/marketOrder'}>
-            MarketOrder
-          </StyledNavLink>
-        </HeaderLinks>
+
+        <HideSmall>
+          <HeaderLinks>
+            <StyledNavLink id={`swap-nav-link`} to={'/swap'}>
+              {t('swap')}
+            </StyledNavLink>
+            <StyledNavLink
+              id={`pool-nav-link`}
+              to={'/pool'}
+              isActive={(match, { pathname }) =>
+                Boolean(match) ||
+                pathname.startsWith('/add') ||
+                pathname.startsWith('/remove') ||
+                pathname.startsWith('/create') ||
+                pathname.startsWith('/find')
+              }
+            >
+              {t('pool')}
+            </StyledNavLink>
+            <StyledNavLink id={`stake-nav-link`} to={'/wallet'}>
+              Wallet
+            </StyledNavLink>
+            <StyledNavLink id={`stake-nav-link`} to={'/liquidity-pool'}>
+              LiquidityPool
+            </StyledNavLink>
+            <StyledNavLink id={`stake-nav-link`} to={'/marketOrder'}>
+              MarketOrder
+            </StyledNavLink>
+            <StyledNavLink id={`stake-nav-link`} to={'/voting'}>
+              Voting
+            </StyledNavLink>
+          </HeaderLinks>
+
+        </HideSmall>
+
+        <HideLarge>
+          <MenuContainer>
+            <Menu></Menu>
+          </MenuContainer>
+        </HideLarge>
       </HeaderRow>
       <HeaderControls>
         <HeaderElement>
@@ -320,7 +360,8 @@ export default function Header() {
               <NetworkCard title={NETWORK_LABELS[chainId]}>{NETWORK_LABELS[chainId]}</NetworkCard>
             )}
           </HideSmall>
-          {aggregateBalance && (
+
+          {/* {aggregateBalance && (
             <WalletBalanceWrapper onClick={() => setShowUniBalanceModal(true)}>
               <WalletBalanceAmount active={!!account && !availableClaim} style={{ pointerEvents: 'auto' }}>
                 <USDTokenBalanceAccumulator
@@ -328,14 +369,7 @@ export default function Header() {
                   incrementUSDWalletBalance={incrementUSDWalletBalance}
                   decrementUSDWalletBalance={decrementUSDWalletBalance}
                 />
-                {/* { Object.values(tokenBalances).map((tokenAmount) =>
-                  <USDTokenBalanceAccumulator
-                    key={ tokenAmount!.currency.name }
-                    currencyAmount={ tokenAmount! }
-                    incrementUSDWalletBalance={ incrementUSDWalletBalance }
-                    decrementUSDWalletBalance={ decrementUSDWalletBalance }
-                  />)
-                } */}
+  
                 $
                 {account && (
                   <TYPE.white
@@ -359,12 +393,12 @@ export default function Header() {
               </WalletBalanceAmount>
               <CardNoise />
             </WalletBalanceWrapper>
-          )}
+          )} */}
           <AccountElement active={!!account} style={{ pointerEvents: 'auto' }}>
             <Web3Status />
           </AccountElement>
         </HeaderElement>
       </HeaderControls>
-    </HeaderFrame>
+    </HeaderFrame >
   )
 }

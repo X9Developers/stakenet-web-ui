@@ -4,6 +4,7 @@ import { memo } from 'react'
 import { Text } from 'rebass'
 import { TextInput } from './TextInput';
 import { ArrowLeft } from '../initializeWallet/styleds';
+import { StyledInternalLink } from 'theme';
 
 export const TopSection = styled(AutoColumn)`
   max-width: 800px;
@@ -101,4 +102,19 @@ display: flex;
 flex-direction: column;
 justify-content: center;
 align-items: center;
+`
+export const ArrowWrapper = styled(StyledInternalLink)`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 24px;
+  color: ${({ theme }) => theme.text1};
+
+  a {
+    color: ${({ theme }) => theme.text1};
+    text-decoration: none;
+  }
+  :hover {
+    text-decoration: none;
+  }
 `

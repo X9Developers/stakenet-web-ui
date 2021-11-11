@@ -15,6 +15,8 @@ import { useVoting } from '../../hooks/useVoting';
 import { BigNumber } from 'ethers';
 import { ButtonPrimary } from '../../components/Button/index';
 import { AutoRow } from '../../components/Row/index';
+import { resetLoader, finishVotingLoader } from '../../constants/voting/loadingMessages';
+import { LoadingScreenComponentProps, LoadingScreenComponent } from '../../components/calculator/loadingScreenComponent';
 
 const TopSection = styled(AutoColumn)`
   max-width: 800px;
@@ -73,18 +75,19 @@ const WrapSmall = styled(RowBetween)`
   `};
 `
 
-
 export const Voting = () => {
 
   const [proposalList, setProposalList] = useState<any[]>([])
-
   const { account } = useActiveWeb3React()
+  const [isOwnerValue, setIsOwnerValue] = useState(false)
+  const [loadingScreen, setLoadingScreen] = useState<LoadingScreenComponentProps>(resetLoader)
 
   const {
     getProposals,
-    contract
+    contract,
+    finishVoting,
+    getOwner
   } = useVoting()
-
 
   const getProposalList = async () => {
     if (contract && account) {
@@ -95,29 +98,54 @@ export const Voting = () => {
     }
   }
 
-
-
+  const isOwner = async () => {
+    try {
+      if (contract) {
+        const owner = await getOwner()
+        console.log('owner', owner)
+        console.log('isOwner: ', account === owner)
+        setIsOwnerValue(account === owner)
+      } else {
+        setIsOwnerValue(false)
+      }
+    } catch (err) {
+      console.log(err)
+    }
+  }
 
   const savedGetProposalList = useRef(getProposalList)
-
+  const savedIsOwner = useRef(isOwner)
 
   useEffect(() => {
     savedGetProposalList.current = getProposalList
+    savedIsOwner.current = isOwner
   });
 
   useEffect(() => {
     savedGetProposalList.current()
+    savedIsOwner.current()
   }, [contract, account])
 
   useEffect(() => {
   }, [proposalList])
+
+  const handleFinishVoting = async () => {
+    try {
+      setLoadingScreen(finishVotingLoader)
+      await finishVoting()
+      await getProposalList()
+      setLoadingScreen(resetLoader)
+    } catch (err) {
+      setLoadingScreen(resetLoader)
+      console.log(err)
+    }
+  }
 
   return (
     <TopSection gap="md">
       <VoteCard>
         <CardBGImage />
         <CardNoise />
-
         <CardSection>
           <AutoColumn gap="md">
             <RowBetween>
@@ -142,6 +170,18 @@ export const Voting = () => {
         <CardNoise />
       </VoteCard>
       <TopSection gap="2px">
+        {(isOwnerValue) &&
+
+          <AutoRow justify="center" style={{ margin: '2px' }}>
+            <ButtonPrimary
+              style={{ width: '100%', borderRadius: '8px' }}
+              padding="8px"
+              onClick={handleFinishVoting}
+            >
+              Finish Voting
+            </ButtonPrimary>
+          </AutoRow>
+        }
         <WrapSmall>
           <TYPE.mediumHeader style={{ margin: '0.5rem 0.5rem 0.5rem 0', flexShrink: 0 }}>
             Proposals
@@ -176,6 +216,7 @@ export const Voting = () => {
           ))
         )
       }
+      <LoadingScreenComponent {...loadingScreen} />
     </TopSection >
   )
 }

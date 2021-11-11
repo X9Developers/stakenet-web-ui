@@ -1,22 +1,20 @@
 import { LoadingScreenComponentProps } from "components/calculator/loadingScreenComponent"
 
-
-
 export const voteFavourLoader: LoadingScreenComponentProps = {
   showLoading: true,
-  title: 'voting Favour',
+  title: 'Voting Favour',
   subtitle: 'please wait a moment'
 }
 
 export const leaveVoterLoader: LoadingScreenComponentProps = {
   showLoading: true,
-  title: 'leaving Voter',
+  title: 'Leaving Voter',
   subtitle: 'please wait a moment'
 }
 
 export const joinVoterLoader: LoadingScreenComponentProps = {
   showLoading: true,
-  title: 'joining Voter',
+  title: 'Joining Voter',
   subtitle: 'please wait a moment'
 }
 
@@ -28,19 +26,19 @@ export const resetLoader: LoadingScreenComponentProps = {
 
 export const voteAgainstLoader: LoadingScreenComponentProps = {
   showLoading: true,
-  title: 'voting against',
+  title: 'Voting Against',
   subtitle: 'please wait a moment'
 }
 
 export const createProposalLoader: LoadingScreenComponentProps = {
   showLoading: true,
-  title: 'creating proposal',
+  title: 'Creating Proposal',
   subtitle: 'please wait a moment'
 }
 
-export const resolveTransferLoader: LoadingScreenComponentProps = {
+export const finishVotingLoader: LoadingScreenComponentProps = {
   showLoading: true,
-  title: 'resolving transfers',
+  title: 'Finishing Voting',
   subtitle: 'please wait a moment'
 }
 

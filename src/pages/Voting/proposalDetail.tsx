@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { AutoColumn } from '../../components/Column'
 import styled from 'styled-components'
 import { RouteComponentProps } from 'react-router-dom'
-import { TYPE, StyledInternalLink } from '../../theme'
+import { TYPE } from '../../theme'
 import { RowFixed, RowBetween } from '../../components/Row'
 import { CardSection, DataCard } from '../../components/earn/styled';
 import { ArrowLeft } from 'react-feather'
@@ -13,6 +13,8 @@ import { BigNumber } from 'ethers';
 import { LoadingScreenComponent, LoadingScreenComponentProps } from '../../components/calculator/loadingScreenComponent';
 import { resetLoader, voteAgainstLoader, voteFavourLoader } from 'constants/voting/loadingMessages'
 import { leaveVoterLoader, joinVoterLoader } from 'constants/voting/loadingMessages';
+import { useActiveWeb3React } from '../../hooks/index';
+import { ArrowWrapper, EmptyProposals } from './styled';
 
 const PageWrapper = styled(AutoColumn)`
   width: 100%;
@@ -23,7 +25,6 @@ const TopSection = styled(AutoColumn)`
   width: 100%;
 `
 
-
 const ProposalInfo = styled(AutoColumn)`
   border: 1px solid ${({ theme }) => theme.bg4};
   border-radius: 12px;
@@ -32,21 +33,7 @@ const ProposalInfo = styled(AutoColumn)`
   max-width: 800px;
   width: 100%;
 `
-const ArrowWrapper = styled(StyledInternalLink)`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 24px;
-  color: ${({ theme }) => theme.text1};
 
-  a {
-    color: ${({ theme }) => theme.text1};
-    text-decoration: none;
-  }
-  :hover {
-    text-decoration: none;
-  }
-`
 const CardWrapper = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -90,22 +77,6 @@ const WrapSmall = styled(RowBetween)`
   `};
 `
 
-
-const EmptyProposals = styled.div`
-  border: 1px solid ${({ theme }) => theme.text4};
-  padding: 16px 12px;
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-`
-
-export enum Votes {
-  VOTE_FAVOUR = 0,
-  VOTE_AGAINST = 1
-}
-
 export default function ProposalDetail({
   match: {
     params: { id }
@@ -114,12 +85,14 @@ export default function ProposalDetail({
 
   const [proposal, setProposal] = useState<any>(undefined)
   const [voter, setVoter] = useState(false)
+  const [hasVoted, setHasVoted] = useState(false)
+  const [loading, setloading] = useState(true)
 
   const [loadingScreen, setLoadingScreen] = useState<LoadingScreenComponentProps>(resetLoader)
 
-  const showVotingButtons = true
+  const { getProposalById, contract, isVoter, joinVoters, voteFavour, leaveVoters, voteAgainst, hasVotedFor } = useVoting()
 
-  const { getProposalById, contract, isVoter, joinVoters, voteFavour, leaveVoters, voteAgainst } = useVoting()
+  const { account } = useActiveWeb3React()
 
   const getProposal = async () => {
     setProposal(await getProposalById(id))
@@ -139,19 +112,43 @@ export default function ProposalDetail({
     }
   }
 
+  const checkHasVotedFor = async () => {
+    try {
+      if (proposal && account) {
+        setloading(true)
+        setHasVoted(await hasVotedFor(account!, proposal.id._hex))
+        setloading(false)
+      } else {
+        setHasVoted(false)
+      }
+    } catch (err) {
+      setloading(false)
+      console.log(err)
+      setHasVoted(false)
+    }
+  }
+
   const savedGetProposal = useRef(getProposal)
 
   const savedIsVoter = useRef(checkVoter)
+  const savedCheckHasVotedFor = useRef(checkHasVotedFor)
 
   useEffect(() => {
     savedGetProposal.current = getProposal
     savedIsVoter.current = checkVoter
+    savedCheckHasVotedFor.current = checkHasVotedFor
   });
 
   useEffect(() => {
     savedGetProposal.current()
     savedIsVoter.current()
   }, [contract, id])
+
+
+  useEffect(() => {
+    savedCheckHasVotedFor.current()
+  }, [proposal])
+
 
   const handleJoinVoter = async () => {
     try {
@@ -183,7 +180,6 @@ export default function ProposalDetail({
     }
     return '0'
   }
-
 
   const calculateprocetangeVoteFavour = () => {
     if (Number(proposal.favourCount) === 0) {
@@ -222,6 +218,16 @@ export default function ProposalDetail({
     } catch (err) {
       setLoadingScreen(resetLoader)
       console.log(err)
+    }
+  }
+
+  const showVoterButtons = () => {
+    if (account! === proposal.proposer) {
+      return false
+    } else if (voter && !hasVoted) {
+      return true
+    } else {
+      return false
     }
   }
 
@@ -269,7 +275,7 @@ export default function ProposalDetail({
                   <AutoColumn gap="10px" style={{ width: '100%' }}>
                     <TYPE.largeHeader style={{ marginBottom: '.5rem' }}>{proposal?.name}</TYPE.largeHeader>
                   </AutoColumn>
-                  {showVotingButtons ? (
+                  {showVoterButtons() && !loading && (
                     <RowFixed style={{ width: '100%', gap: '12px' }}>
                       <ButtonPrimary
                         padding="8px"
@@ -286,9 +292,8 @@ export default function ProposalDetail({
                         Vote Against
                       </ButtonPrimary>
                     </RowFixed>
-                  ) : (
-                    ''
-                  )}
+                  )
+                  }
                   <CardWrapper>
                     <StyledDataCard>
                       <CardSection>
@@ -350,9 +355,6 @@ export default function ProposalDetail({
                   <RowBetween style={{ width: '100%' }}>
                     <EmptyProposals style={{ width: '100%' }}>
                       <TYPE.body style={{ marginBottom: '8px' }}>Proposal not found.</TYPE.body>
-                      {/* <TYPE.subHeader>
-                        <i>Proposal submitted by community members will appear here.</i>
-                      </TYPE.subHeader> */}
                     </EmptyProposals>
                   </RowBetween>
                 </>
@@ -360,7 +362,6 @@ export default function ProposalDetail({
             }
           </ProposalInfo>
         </WrapSmall>
-
       </TopSection>
       <LoadingScreenComponent {...loadingScreen} />
     </PageWrapper >

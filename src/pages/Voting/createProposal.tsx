@@ -5,14 +5,14 @@ import { useVoting } from '../../hooks/useVoting';
 import { AutoRow } from '../../components/Row/index';
 import { ButtonPrimary } from '../../components/Button';
 import Row from 'components/Row';
-import { Link as HistoryLink } from 'react-router-dom'
 import { escapeRegExp } from 'utils';
 import { LoadingScreenComponentProps, LoadingScreenComponent } from '../../components/calculator/loadingScreenComponent';
 import { resetLoader } from '../../constants/liquidity-pool/loadingMessagges';
 import { createProposalLoader } from '../../constants/voting/loadingMessages';
 import { useHistory } from 'react-router';
 import { useActiveWeb3React } from 'hooks';
-import { ActiveText, InputContainer, ProposalEditorContainer, ProposalEditorHeader, ProposalTitle, StyledArrowLeft, Tabs, TopSection } from './styled';
+import { ActiveText, ArrowWrapper, InputContainer, ProposalEditorContainer, ProposalEditorHeader, ProposalTitle, Tabs, TopSection } from './styled';
+import { ArrowLeft } from 'react-feather';
 
 
 export const CreateProposal = () => {
@@ -31,9 +31,6 @@ export const CreateProposal = () => {
     [setTitleValue]
   )
 
-
-
-
   const handleBodyInput = useCallback(
     (body: string) => {
       setBodyValue(body)
@@ -50,7 +47,6 @@ export const CreateProposal = () => {
     
   Insert your conclusion here    
     `
-
 
   const { account } = useActiveWeb3React()
 
@@ -71,9 +67,9 @@ export const CreateProposal = () => {
     }
   }
 
-  const inputRegex = RegExp(`^\\d*(?:\\\\[.])?\\d*$`) // match escaped "." characters via in a non-capturing group
+  const inputRegex = RegExp(`^\\d*$`) // match escaped "." characters via in a non-capturing group
 
-  const validateData = () => titleValue && bodyValue && budgetValue && account ? true : false
+  const validateData = () => titleValue && bodyValue && budgetValue && account && Number(budgetValue) > 0 ? true : false
 
 
   const handleBudgetInput = useCallback(
@@ -89,16 +85,15 @@ export const CreateProposal = () => {
     <TopSection gap="md">
       <Tabs>
         <Row style={{ padding: '1rem 1rem 0 1rem' }}>
-          <HistoryLink to="/voting">
-            <StyledArrowLeft />
-          </HistoryLink>
+          <ArrowWrapper to="/voting">
+            <ArrowLeft size={20} />
+          </ArrowWrapper>
           <ActiveText style={{ marginLeft: 'auto', marginRight: 'auto' }}>Create Proposal</ActiveText>
         </Row>
       </Tabs>
 
       <InputContainer>
         <AutoColumn style={{ width: '100%' }}>
-
           <ProposalEditorHeader>
             Budget
           </ProposalEditorHeader>

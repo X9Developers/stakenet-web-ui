@@ -1,4 +1,4 @@
-export const scAddress = '0x67b6C36Cd3441Ea4f6C4ccbF86a2E56500D63990';
+export const scAddress = '0xec04C8370390B52109260A7B569e92916Ef8Cc90';
 export const tokenAddrress = '0x59caEe485c2CB56AD5C6ff7F206776850C6F5e45';
 
 export const ERC20Abi = [

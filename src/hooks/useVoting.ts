@@ -114,9 +114,9 @@ export const useVoting = () => {
   }
 
 
-  const voteFavour = async (proposalID: string) => {
+  const voteFavour = async (proposalId: string) => {
     try {
-      const voteTx = await contractSigner!.voteFavour(proposalID)
+      const voteTx = await contractSigner!.voteFavour(proposalId)
       await voteTx.wait()
     } catch (err) {
       console.log(err)
@@ -125,9 +125,9 @@ export const useVoting = () => {
   }
 
 
-  const voteAgainst = async (proposalID: string) => {
+  const voteAgainst = async (proposalId: string) => {
     try {
-      const voteTx = await contractSigner!.voteAgainst(proposalID)
+      const voteTx = await contractSigner!.voteAgainst(proposalId)
       await voteTx.wait()
     } catch (err) {
       console.log(err)
@@ -137,7 +137,8 @@ export const useVoting = () => {
 
   const finishVoting = async () => {
     try {
-      await contract!.finishVoting()
+      const finishVotingTx = await contractSigner!.finishVoting()
+      console.log('finishVotingTx', finishVotingTx)
     } catch (err) {
       console.log(err)
       throw new Error(err)
@@ -153,6 +154,27 @@ export const useVoting = () => {
     }
   }
 
+  const getOwner = async () => {
+    try {
+      const owner: string = await contract!.getOwner()
+      return owner
+    } catch (err) {
+      console.log(err)
+      throw new Error(err)
+    }
+  }
+
+
+  const hasVotedFor = async (address: string, proposalId: string) => {
+    try {
+      const hasVoted: boolean = await contract!.hasVotedFor(address, proposalId)
+      return hasVoted
+    } catch (err) {
+      console.log(err)
+      throw new Error(err)
+    }
+  }
+
   return {
     getProposals,
     addProposal,
@@ -164,7 +186,9 @@ export const useVoting = () => {
     voteAgainst,
     finishVoting,
     contract,
-    getProposalById
+    getProposalById,
+    getOwner,
+    hasVotedFor
   }
 }
 

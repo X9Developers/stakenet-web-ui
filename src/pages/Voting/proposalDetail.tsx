@@ -256,7 +256,7 @@ export default function ProposalDetail({
                             handleLeaveVoter()
                           }}
                         >
-                          Leave Voter
+                          Stop being a Voter
                         </ButtonPrimary>)
                         :
                         (<ButtonPrimary
@@ -266,7 +266,7 @@ export default function ProposalDetail({
                             handleJoinVoter()
                           }}
                         >
-                          Join Voter
+                          Become Voter
                         </ButtonPrimary>)
                       }
                     </RowFixed>
@@ -282,7 +282,7 @@ export default function ProposalDetail({
                         borderRadius="8px"
                         onClick={handleVoteFavour}
                       >
-                        Vote For
+                        Vote Favour
                       </ButtonPrimary>
                       <ButtonPrimary
                         padding="8px"
@@ -299,7 +299,7 @@ export default function ProposalDetail({
                       <CardSection>
                         <AutoColumn gap="md">
                           <WrapSmall>
-                            <TYPE.black fontWeight={600}>For</TYPE.black>
+                            <TYPE.black fontWeight={600}>Favour</TYPE.black>
                             <TYPE.black fontWeight={600}>
                               {' '}
                               {proposal?.favourCount.toLocaleString(undefined, { maximumFractionDigits: 0 })}
@@ -330,7 +330,12 @@ export default function ProposalDetail({
                   <AutoColumn gap="md">
                     <TYPE.mediumHeader fontWeight={600}>Budget</TYPE.mediumHeader>
                     <MarkDownWrapper>
-                      <TYPE.mediumHeader fontWeight={600}>{Number(proposal.budget._hex)}</TYPE.mediumHeader>
+                      <TYPE.mediumHeader
+                        color={'#69f0ae'}
+                        fontWeight={600}
+                      >
+                        {`${Number(proposal.budget._hex)} wei`}
+                      </TYPE.mediumHeader>
                     </MarkDownWrapper>
                   </AutoColumn>
                   <AutoColumn gap="md">

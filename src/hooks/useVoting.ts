@@ -138,6 +138,7 @@ export const useVoting = () => {
   const finishVoting = async () => {
     try {
       const finishVotingTx = await contractSigner!.finishVoting()
+      await finishVotingTx.wait()
       console.log('finishVotingTx', finishVotingTx)
     } catch (err) {
       console.log(err)

@@ -1,5 +1,7 @@
 import { LoadingScreenComponentProps } from "components/calculator/loadingScreenComponent"
 
+const subtitle = 'This operation requires some minutes, Metamask will ask you to approve 2 transactions, please be patience'
+
 export const voteFavourLoader: LoadingScreenComponentProps = {
   showLoading: true,
   title: 'Voting Favour',
@@ -8,14 +10,14 @@ export const voteFavourLoader: LoadingScreenComponentProps = {
 
 export const leaveVoterLoader: LoadingScreenComponentProps = {
   showLoading: true,
-  title: 'Leaving Voter',
+  title: 'Stopping being a voter',
   subtitle: 'please wait a moment'
 }
 
 export const joinVoterLoader: LoadingScreenComponentProps = {
   showLoading: true,
-  title: 'Joining Voter',
-  subtitle: 'please wait a moment'
+  title: 'Becoming a Voter',
+  subtitle: subtitle
 }
 
 export const resetLoader: LoadingScreenComponentProps = {
@@ -33,7 +35,7 @@ export const voteAgainstLoader: LoadingScreenComponentProps = {
 export const createProposalLoader: LoadingScreenComponentProps = {
   showLoading: true,
   title: 'Creating Proposal',
-  subtitle: 'please wait a moment'
+  subtitle: subtitle
 }
 
 export const finishVotingLoader: LoadingScreenComponentProps = {

@@ -242,25 +242,34 @@ export const Voting = () => {
           </AutoRow>
         </WrapSmall>
       </TopSection>
-      {(proposalList.length === 0) ?
+      {(!account) ?
         <EmptyProposals>
-          <TYPE.body style={{ marginBottom: '8px' }}>No proposals found.</TYPE.body>
+          <TYPE.body style={{ marginBottom: '8px' }}>Connect to Wallet</TYPE.body>
           <TYPE.subHeader>
-            <i>Proposals submitted by community members will appear here.</i>
+            <i>You need to connect to a wallet to load the data.</i>
           </TYPE.subHeader>
         </EmptyProposals>
-        :
-        (
-          proposalList.map((proposal: any) => (
-            <Proposal as={Link} to={`/proposalDetail/${proposal.id._hex}`} key={Math.random().toString()}>
-              <Column>
-                <TitleSection >Id</TitleSection>
-                <ProposalNumber>{BigNumber.from(proposal.id._hex).toString()}</ProposalNumber>
-              </Column>
-              <ProposalTitle>{proposal.name}</ProposalTitle>
-              <ProposalStatus status={'active'}>{'active'}</ProposalStatus>
-            </Proposal>
-          ))
+        : (
+          (proposalList.length === 0) ?
+            <EmptyProposals>
+              <TYPE.body style={{ marginBottom: '8px' }}>No proposals found.</TYPE.body>
+              <TYPE.subHeader>
+                <i>Proposals submitted by community members will appear here.</i>
+              </TYPE.subHeader>
+            </EmptyProposals>
+            :
+            (
+              proposalList.map((proposal: any) => (
+                <Proposal as={Link} to={`/proposalDetail/${proposal.id._hex}`} key={Math.random().toString()}>
+                  <Column>
+                    <TitleSection >Id</TitleSection>
+                    <ProposalNumber>{BigNumber.from(proposal.id._hex).toString()}</ProposalNumber>
+                  </Column>
+                  <ProposalTitle>{proposal.name}</ProposalTitle>
+                  <ProposalStatus status={'active'}>{'active'}</ProposalStatus>
+                </Proposal>
+              ))
+            )
         )
       }
       <LoadingScreenComponent {...loadingScreen} />

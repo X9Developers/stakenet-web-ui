@@ -115,17 +115,9 @@ export default function Menu() {
             {/* <Info size={14} /> */}
             Wallet
           </MenuItem>
-          <MenuItem id="link" to="/liquidity-pool">
-            {/* <BookOpen size={14} /> */}
-            LiquidityPool
-          </MenuItem>
           {/* <MenuItem id="link" to={CODE_LINK}>
             Code
           </MenuItem> */}
-          <MenuItem id="link" to="/marketOrder">
-            {/* <MessageCircle size={14} /> */}
-            MarketOrder
-          </MenuItem>
           <MenuItem id="link" to="/voting">
             {/* <PieChart size={14} /> */}
             voting

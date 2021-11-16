@@ -37,9 +37,7 @@ import RedirectAddWallet from './initializeWallet/AddWallet/redirects';
 import RedirectSeedPhrase from './initializeWallet/SeedPhrase/redirects'
 import RedirectUnlockWallet from './initializeWallet/UnlockWallet/redirects';
 import RedirectRestoreWallet from './initializeWallet/RestoreWallet/redirects';
-import { Connext } from './LiquidityPool/connext'
 import { useWebSocket, useWebSocketMarketOrder } from 'hooks/webSocket/useWebSocket';
-import { MarketOrder } from './MarketOrder'
 import { webSocketMarketOrder, webSocketContext } from 'hooks/webSocket/webSocketContext'
 import { Voting } from './Voting/index';
 import ProposalDetail from './Voting/proposalDetail'
@@ -131,8 +129,6 @@ export default function App() {
                   <Route exact strict path="/wallet/restore-wallet" component={RedirectRestoreWallet} />
                   <Route exact strict path="/wallet/seed-phrase" component={RedirectSeedPhrase} />
                   <Route exact strict path="/wallet/unlock" component={RedirectUnlockWallet} />
-                  <Route exact strict path="/liquidity-pool" component={Connext} />
-                  <Route exact strict path="/marketOrder" component={MarketOrder} />
                   <Route exact strict path="/voting" component={Voting} />
                   <Route exact strict path="/proposalDetail/:id" component={ProposalDetail} />
                   <Route exact strict path="/createProposal" component={CreateProposal} />
